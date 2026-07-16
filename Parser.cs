@@ -2,7 +2,7 @@ namespace SudScript;
 
 public class Parser(List<Token> _tokens)
 {
-	List<Token> tokens = _tokens;
+	readonly List<Token> tokens = _tokens;
 
 	int position = 0;
 

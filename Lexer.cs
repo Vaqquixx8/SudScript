@@ -54,7 +54,7 @@ public class Lexer(string _source)
 
 	char Peek(int offset = 1) =>  position + offset >= source.Length ? '\0' : source[position + offset];
 
-	Dictionary<string, TokenType> keywords = new Dictionary<string, TokenType>()
+	readonly Dictionary<string, TokenType> keywords = new Dictionary<string, TokenType>()
 	{
 		{"let", TokenType.Let},
 		{"if", TokenType.If},
@@ -98,6 +98,7 @@ public class Lexer(string _source)
 				continue;
 			}
 
+			// Numberic Literals
 			if (char.IsDigit(Current))
 			{
 				int start = position;
@@ -127,6 +128,7 @@ public class Lexer(string _source)
 				continue;
 			}
 
+			// Identifiers and Keywords
 			if (char.IsLetter(Current) || Current == '_')
 			{
 				int start = position;
@@ -149,6 +151,7 @@ public class Lexer(string _source)
 				continue;
 			}
 
+			// String Literals
 			if (Current == '"')
 			{
 				int startLine = line;
@@ -176,6 +179,7 @@ public class Lexer(string _source)
 				continue;
 			}
 
+			// Misc Tokens, 1 and 2 chars
 			switch (Current)
 			{
 				case '+':

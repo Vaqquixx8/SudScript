@@ -2,9 +2,9 @@ namespace SudScript;
 
 public class Environment(Environment? parent = null)
 {
-	private readonly Dictionary<string, Value> values = new Dictionary<string, Value>();
-	private readonly Dictionary<string, FunctionDeclaration> functions = new Dictionary<string, FunctionDeclaration>();
-	private readonly Dictionary<string, StructDeclaration> structs = new Dictionary<string, StructDeclaration>();
+	readonly Dictionary<string, Value> values = new Dictionary<string, Value>();
+	readonly Dictionary<string, FunctionDeclaration> functions = new Dictionary<string, FunctionDeclaration>();
+	readonly Dictionary<string, StructDeclaration> structs = new Dictionary<string, StructDeclaration>();
 
 	public Environment? Parent { get; } = parent;
 

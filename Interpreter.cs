@@ -5,7 +5,7 @@ public class Interpreter
 	Environment environment = new Environment();
 	ProgramNode? program;
 
-	Dictionary<string, Func<List<Value>, Value>> builtins = new Dictionary<string, Func<List<Value>, Value>>();
+	readonly Dictionary<string, Func<List<Value>, Value>> builtins = new Dictionary<string, Func<List<Value>, Value>>();
 
 	public void Initialize(ProgramNode _program)
 	{
@@ -69,6 +69,10 @@ public class Interpreter
 		builtins["stringToBool"] = args =>
 		{
 			return new BooleanValue(bool.Parse(ToText(args[0])));
+		}; 
+		builtins["toString"] = args =>
+		{
+			return new StringValue(ToText(args[0]));
 		};
 		builtins["sqrt"] = args =>
 		{
