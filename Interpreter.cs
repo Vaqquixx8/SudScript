@@ -44,7 +44,7 @@ public class Interpreter
 
 	void InitializeBuiltins()
 	{
-		Random random = new();
+		Random random = new Random();
 
 		builtins["random"] = args =>
 		{
@@ -324,6 +324,36 @@ public class Interpreter
 			case "contains":
 			{
 				return new BooleanValue(list.Values.Any(v => AreEqual(v, args[0])));
+			}
+
+			case "fill":
+			{
+				int size = list.Values.Count;
+
+				if(args.Count > 1)
+				{
+					size = (int)((NumberValue)args[1]).Value;
+					list.Values.Clear();
+
+					for(int i = 0; i < size; ++i)
+					{
+						list.Values.Add(args[0]);
+					}
+				}
+				else
+				{
+					for(int i = 0; i < size; ++i)
+					{
+						list.Values[i] = args[0];
+					}
+				}
+				return new VoidValue();
+			}
+
+			case "clear":
+			{
+				list.Values.Clear();
+				return new VoidValue();
 			}
 
 			default:

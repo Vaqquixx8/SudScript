@@ -1,0 +1,54 @@
+struct Framebuffer
+{
+	let colors = []
+
+	let width = 0
+	let height = 0
+
+	func initialize(width, height)
+	{
+		self:width = width
+		self:height = height
+		self:colors:fill(0, width * height)
+	}
+
+	func setPixel(x, y, color)
+	{
+		let index = y * self:width + x
+		self:colors:set(index, color)
+	}
+}
+
+let framebuffer = Framebuffer{}
+func main()
+{
+	framebuffer:initialize(10, 10)
+
+	drawRect(0, 0, 5, 5, 255)
+
+	let i = 0
+	while(i < framebuffer:colors:length())
+	{
+		say(framebuffer:colors:get(i))
+		i = i + 1
+	}
+}
+
+func drawRect(xStart, yStart, w, h, color)
+{
+	let y = yStart
+
+	while(y < yStart + h)
+	{
+		let x = xStart
+
+		while(x < xStart + w)
+		{
+			framebuffer:setPixel(x, y, color)
+
+			x = x + 1
+		}
+
+		y = y + 1
+	}
+}

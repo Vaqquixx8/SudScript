@@ -33,6 +33,8 @@ Lists
     [x] :add()
     [x] :remove()
     [x] :size()
+    [x] :fill()
+    [x] :clear()
 
 Member Access / Structs
 -------------

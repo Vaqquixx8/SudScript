@@ -2,11 +2,10 @@
 
 public class Program
 {
-	static readonly string fibonacciTestPath = "/mnt/HardDrive/Projects/SudScript/ScriptTests/Fibonacci.sud";
-	static readonly string structTestPath = "/mnt/HardDrive/Projects/SudScript/ScriptTests/StructTest.sud";
+	static readonly string testPath = "/mnt/HardDrive/Projects/SudScript/ScriptTests/SoftwareRenderer.sud";
 	static void Main()
 	{
-		string testScript = File.ReadAllText(structTestPath);
+		string testScript = File.ReadAllText(testPath);
 
 		Lexer lexer = new Lexer(testScript);
 		List<Token> tokens = lexer.Tokenize();
