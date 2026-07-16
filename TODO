@@ -27,13 +27,14 @@ Lists
 [x] Tokenize
 [x] Parse
 [x] Runtime Object
-[x] :get()
-[x] :set()
-[x] :add()
-[x] :remove()
-[x] :size()
+[x] Functions
+    [x] :get()
+    [x] :set()
+    [x] :add()
+    [x] :remove()
+    [x] :size()
 
-Member Access
+Member Access / Structs
 -------------
 [x] Structs
     [x] Fields
@@ -48,25 +49,26 @@ Member Access
 
 [ ] Standard Library Modules
     [ ] Add Sud:... Standard Library
-    [ ] Move say() into Sud:Debug
+    [ ] Add Sud:Debug
+        [ ] Move say() into Sud:Debug
     [ ] Add Sud:Math
-
-[ ] Sud:Math
-    [ ] sqrt()
-    [ ] sin()
-    [ ] cos()
-    [ ] tan()
-    [ ] atan()
-    [ ] atan2()
-    [ ] floor()
-    [ ] ceil()
-    [ ] round()
-    [ ] clamp()
-    [ ] lerp()
-    [ ] degToRad()
-    [ ] radToDeg()
-    [ ] PI Constant
-    [ ] E Constant
+        [ ] Modules
+        [ ] Members
+            [ ] sqrt()
+            [ ] sin()
+            [ ] cos()
+            [ ] tan()
+            [ ] atan()
+            [ ] atan2()
+            [ ] floor()
+            [ ] ceil()
+            [ ] round()
+            [ ] clamp()
+            [ ] lerp()
+            [ ] degToRad()
+            [ ] radToDeg()
+            [ ] PI Constant
+            [ ] E Constant
 
 Compiler
 --------

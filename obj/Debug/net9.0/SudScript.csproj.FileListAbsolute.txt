@@ -12,3 +12,4 @@
 /mnt/HardDrive/Projects/SudScript/obj/Debug/net9.0/SudScript.pdb
 /mnt/HardDrive/Projects/SudScript/obj/Debug/net9.0/SudScript.genruntimeconfig.cache
 /mnt/HardDrive/Projects/SudScript/obj/Debug/net9.0/ref/SudScript.dll
+/mnt/HardDrive/Projects/SudScript/obj/Debug/net9.0/SudScript.sourcelink.json
