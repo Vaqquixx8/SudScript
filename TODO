@@ -1,0 +1,81 @@
+TODO
+
+Language Features
+-----------------
+[x] Binary Expressions
+[x] Unary Expressions
+[x] Variables
+[x] Functions
+[x] If / Else / Else If
+[x] Logical AndAnd and OrOr
+[x] Lists
+[ ] Member Access / Structs
+[ ] Control Flow Improvements
+[ ] Modules (group / need)
+...
+[ ] Compiler
+
+Control Flow Improvements
+-------------------------
+[ ] Named loops
+    [ ] Loop identifiers
+    [ ] break <loopName>
+    [ ] continue <loopName>
+
+Lists
+-----
+[x] Tokenize
+[x] Parse
+[x] Runtime Object
+[x] :get()
+[x] :set()
+[x] :add()
+[x] :remove()
+[x] :size()
+
+Member Access
+-------------
+[x] Structs
+    [x] Fields
+    [x] Methods
+        [x] Instance
+        [x] Shared
+
+[ ] Modules
+    [ ] group
+    [ ] need
+    [ ] alias
+
+[ ] Standard Library Modules
+    [ ] Add Sud:... Standard Library
+    [ ] Move say() into Sud:Debug
+    [ ] Add Sud:Math
+
+[ ] Sud:Math
+    [ ] sqrt()
+    [ ] sin()
+    [ ] cos()
+    [ ] tan()
+    [ ] atan()
+    [ ] atan2()
+    [ ] floor()
+    [ ] ceil()
+    [ ] round()
+    [ ] clamp()
+    [ ] lerp()
+    [ ] degToRad()
+    [ ] radToDeg()
+    [ ] PI Constant
+    [ ] E Constant
+
+Compiler
+--------
+[ ] Write a Compiler
+    [?] Into C?
+    [?] Into C++?
+    [?] Into Odin? <- My most likely
+    [?] Into ASM? 0_0
+    [?] Into C#?
+        [ ] Bootstrapping
+            [ ] Rewrite Compiler in SudScript
+            [ ] Garbage Collection

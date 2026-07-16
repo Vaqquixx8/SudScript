@@ -1,0 +1,14 @@
+/mnt/HardDrive/Projects/SudScript/bin/Debug/net9.0/SudScript
+/mnt/HardDrive/Projects/SudScript/bin/Debug/net9.0/SudScript.deps.json
+/mnt/HardDrive/Projects/SudScript/bin/Debug/net9.0/SudScript.runtimeconfig.json
+/mnt/HardDrive/Projects/SudScript/bin/Debug/net9.0/SudScript.dll
+/mnt/HardDrive/Projects/SudScript/bin/Debug/net9.0/SudScript.pdb
+/mnt/HardDrive/Projects/SudScript/obj/Debug/net9.0/SudScript.GeneratedMSBuildEditorConfig.editorconfig
+/mnt/HardDrive/Projects/SudScript/obj/Debug/net9.0/SudScript.AssemblyInfoInputs.cache
+/mnt/HardDrive/Projects/SudScript/obj/Debug/net9.0/SudScript.AssemblyInfo.cs
+/mnt/HardDrive/Projects/SudScript/obj/Debug/net9.0/SudScript.csproj.CoreCompileInputs.cache
+/mnt/HardDrive/Projects/SudScript/obj/Debug/net9.0/SudScript.dll
+/mnt/HardDrive/Projects/SudScript/obj/Debug/net9.0/refint/SudScript.dll
+/mnt/HardDrive/Projects/SudScript/obj/Debug/net9.0/SudScript.pdb
+/mnt/HardDrive/Projects/SudScript/obj/Debug/net9.0/SudScript.genruntimeconfig.cache
+/mnt/HardDrive/Projects/SudScript/obj/Debug/net9.0/ref/SudScript.dll

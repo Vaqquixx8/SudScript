@@ -1,0 +1,55 @@
+struct Vector2
+{
+    let x = 0
+    let y = 0
+
+    func add(other)
+    {
+        return Vector2{x = self:x + other:x, y = self:y + other:y}
+    }
+
+    shared func normalize(vec)
+    {
+        let len = sqrt(vec:x * vec:x + vec:y * vec:y)
+        if(len != 0)
+        {
+            let invLen = 1 / len
+            return Vector2{x = vec:x * invLen, y = vec:y * invLen}
+        }
+        return Vector2{}
+    }
+}
+
+let playerPosition = Vector2{x = 10, y = 10}
+
+func main()
+{
+    let maxMovementSteps = 10
+    let index = 0
+    while(index < maxMovementSteps)
+    {
+        if(index % 2 == 0)
+        {
+            playerPosition:x = playerPosition:y + 1
+        }
+        else
+        {
+            playerPosition:x = playerPosition:y + 1
+        }
+
+        if(index == 3)
+        {
+            index = index + 1
+            continue
+        }
+        else if(index == 7)
+        {
+            break
+        }
+        
+        index = index + 1
+    }
+
+    say(Vector2:normalize(playerPosition))
+    say(playerPosition)
+}
