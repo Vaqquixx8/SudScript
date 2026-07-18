@@ -8,6 +8,7 @@ public class Program
 		{
 			Console.WriteLine("Usage: sud <command>");
 			Console.WriteLine("Commands:");
+			Console.WriteLine("  new <name>   Create a new Sud project");
 			Console.WriteLine("  run     Run the current Sud project");
 			return;
 		}
@@ -20,12 +21,16 @@ public class Program
 				RunProject();
 				break;
 
+			case "new":
+				NewProject(args);
+				break;
+
 			default:
 				Console.WriteLine($"Unknown command: {command}");
 				break;
 		}
 	}
-	
+
 	static void RunProject()
 	{
 		string manifestPath = FindManifest(
@@ -52,9 +57,68 @@ public class Program
 		interpreter.Execute();
 	}
 
+	static void NewProject(string[] args)
+	{
+		if (args.Length < 2)
+		{
+			Console.WriteLine("Usage: sud new <project-name>");
+			return;
+		}
+
+		string projectName = args[1];
+
+		string projectRoot = Path.Combine(
+			Directory.GetCurrentDirectory(),
+			projectName);
+
+		if (Directory.Exists(projectRoot))
+		{
+			Console.WriteLine($"Project '{projectName}' already exists.");
+			return;
+		}
+
+		// Create directories
+		Directory.CreateDirectory(projectRoot);
+
+		string srcDirectory = Path.Combine(
+			projectRoot,
+			"src");
+
+		Directory.CreateDirectory(srcDirectory);
+
+		// Create sud.manifest
+		string manifest =
+	@$"
+project = {projectName}
+entry = ""src/Main.sud""
+modules = ""src/Modules""
+";
+
+		File.WriteAllText(
+			Path.Combine(projectRoot, "sud.manifest"),
+			manifest.Trim());
+
+
+		string mainScript =
+@"
+// Main.sud
+func main()
+{
+	say(""Hello World!"")
+}
+";
+
+		File.WriteAllText(
+			Path.Combine(srcDirectory, "Main.sud"),
+			mainScript);
+
+
+		Console.WriteLine($"Created Sud project '{projectName}'.");
+	}
+
 	public static string FindManifest(string startPath)
 	{
-		DirectoryInfo dir;
+		DirectoryInfo? dir;
 
 		if (File.Exists(startPath))
 		{

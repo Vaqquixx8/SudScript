@@ -11,6 +11,10 @@
     <PackAsTool>true</PackAsTool>
     <ToolCommandName>sud</ToolCommandName>
     <PackageOutputPath>./nupkg</PackageOutputPath>
+
+    <PackageId>sudscript</PackageId>
+    <Version>0.0.3.2</Version>
+    <Description>SudScript programming language CLI</Description>
   </PropertyGroup>
 
 </Project>

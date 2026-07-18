@@ -1,10 +1,10 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <package xmlns="http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd">
   <metadata>
-    <id>SudScript</id>
-    <version>1.0.0</version>
+    <id>sudscript</id>
+    <version>0.0.3.2</version>
     <authors>SudScript</authors>
-    <description>Package Description</description>
+    <description>SudScript programming language CLI</description>
     <packageTypes>
       <packageType name="DotnetTool" />
     </packageTypes>

@@ -5,10 +5,10 @@
   },
   "projects": {
     "/mnt/HardDrive/Projects/SudScript/SudScript.csproj": {
-      "version": "1.0.0",
+      "version": "0.0.3.2",
       "restore": {
         "projectUniqueName": "/mnt/HardDrive/Projects/SudScript/SudScript.csproj",
-        "projectName": "SudScript",
+        "projectName": "sudscript",
         "projectPath": "/mnt/HardDrive/Projects/SudScript/SudScript.csproj",
         "packagesPath": "/home/josh/.nuget/packages/",
         "outputPath": "/mnt/HardDrive/Projects/SudScript/obj/",
