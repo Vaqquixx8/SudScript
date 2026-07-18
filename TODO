@@ -10,8 +10,8 @@ Language Features
 [x] Logical AndAnd and OrOr
 [x] Lists
 [ ] Member Access / Structs
+[ ] Allow Sud Projects
 [ ] Control Flow Improvements
-[ ] Modules (group / need)
 
 Lists
 -----
@@ -26,6 +26,7 @@ Lists
     [x] :size()
     [x] :fill()
     [x] :clear()
+    [x] :contains()
 
 Member Access / Structs
 -------------
@@ -36,7 +37,7 @@ Member Access / Structs
         [x] Shared
 
 [ ] Modules (Structs)
-    [ ] need
+    [x] need
     [ ] alias
 
 [ ] Standard Library Modules
@@ -61,6 +62,17 @@ Member Access / Structs
             [ ] radToDeg()
             [ ] PI Constant
             [ ] E Constant
+
+Allow Sud Projects
+------------------
+[ ] SudManifest
+    [ ] ROOTPATH/Sud.SudManifest
+        [ ] Project Name
+        [ ] Paths
+            [ ] Project Relative Paths
+                [ ] /src
+                [ ] /src/Main.sud
+                [ ] /src/Modules/
 
 Control Flow Improvements
 -------------------------

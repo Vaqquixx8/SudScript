@@ -2,11 +2,11 @@
 
 public class Program
 {
-	static readonly string testPath = "/mnt/HardDrive/Projects/SudScript/src/ImportTest.sud";
+	static readonly string sourcePath = "/mnt/HardDrive/Projects/SudScript/src";
 
 	static void Main()
 	{
-		string testScript = File.ReadAllText(testPath);
+		string testScript = File.ReadAllText(Path.Combine(sourcePath, "Main.sud"));
 
 		Lexer lexer = new Lexer(testScript);
 		List<Token> tokens = lexer.Tokenize();
@@ -16,8 +16,7 @@ public class Program
 
 		Interpreter interpreter = new Interpreter();
 
-		// Set the modules directory before initializing
-		interpreter.SetModulesDirectory("/mnt/HardDrive/Projects/SudScript/src/modules");
+		interpreter.SetModulesDirectory(Path.Combine(sourcePath, "Modules"));
 
 		interpreter.Initialize(prgm);
 		interpreter.Execute();
