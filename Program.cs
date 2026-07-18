@@ -2,23 +2,81 @@
 
 public class Program
 {
-	static readonly string sourcePath = "/mnt/HardDrive/Projects/SudScript/src";
-
-	static void Main()
+	static void Main(string[] args)
 	{
-		string testScript = File.ReadAllText(Path.Combine(sourcePath, "Main.sud"));
+		if (args.Length == 0)
+		{
+			Console.WriteLine("Usage: sud <command>");
+			Console.WriteLine("Commands:");
+			Console.WriteLine("  run     Run the current Sud project");
+			return;
+		}
+
+		string command = args[0];
+
+		switch (command)
+		{
+			case "run":
+				RunProject();
+				break;
+
+			default:
+				Console.WriteLine($"Unknown command: {command}");
+				break;
+		}
+	}
+	
+	static void RunProject()
+	{
+		string manifestPath = FindManifest(
+			Directory.GetCurrentDirectory());
+
+		Manifest manifest = Manifest.Load(manifestPath);
+
+		string projectRoot = Path.GetDirectoryName(manifestPath)!;
+
+		string testScript = File.ReadAllText(
+			Path.Combine(projectRoot, manifest.Entry!));
 
 		Lexer lexer = new Lexer(testScript);
-		List<Token> tokens = lexer.Tokenize();
+		Parser parser = new Parser(lexer.Tokenize());
 
-		Parser parser = new Parser(tokens);
-		ProgramNode prgm = parser.ParseProgram();
+		ProgramNode program = parser.ParseProgram();
 
-		Interpreter interpreter = new Interpreter();
+		Interpreter interpreter = new();
 
-		interpreter.SetModulesDirectory(Path.Combine(sourcePath, "Modules"));
+		interpreter.SetModulesDirectory(
+			Path.Combine(projectRoot, manifest.Modules!));
 
-		interpreter.Initialize(prgm);
+		interpreter.Initialize(program);
 		interpreter.Execute();
+	}
+
+	public static string FindManifest(string startPath)
+	{
+		DirectoryInfo dir;
+
+		if (File.Exists(startPath))
+		{
+			dir = new DirectoryInfo(Path.GetDirectoryName(startPath)!);
+		}
+		else
+		{
+			dir = new DirectoryInfo(startPath);
+		}
+			
+		while (dir != null)
+		{
+			string manifest = Path.Combine(dir.FullName, "sud.manifest");
+
+			if (File.Exists(manifest))
+			{
+				return manifest;
+			}
+
+			dir = dir.Parent;
+		}
+
+		throw new FileNotFoundException("Could not locate sud.manifest.");
 	}
 }

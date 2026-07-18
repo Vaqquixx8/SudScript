@@ -1,3 +1,5 @@
+using System.ComponentModel;
+
 namespace SudScript;
 
 public class Interpreter
@@ -19,8 +21,15 @@ public class Interpreter
 		InitializeBuiltins();
 
 		// Create module loader - use absolute path or fallback
-		string baseDir = modulesDirectory ??
-			Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "scripts");
+		string baseDir = "";
+		if (modulesDirectory == null)
+		{
+			throw new Exception($"No modules directory set.");
+		}
+		else
+		{
+			baseDir = modulesDirectory;
+		}
 
 		// Ensure the path is absolute
 		if (!Path.IsPathRooted(baseDir))

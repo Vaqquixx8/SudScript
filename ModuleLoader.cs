@@ -39,6 +39,7 @@ public class ModuleLoader(string _baseDirectory)
 		}
 		return structs;
 	}
+	
 	string ResolveFilePath(List<string> path)
 	{
 		string relative = string.Join("/", path) + ".sud";
@@ -55,6 +56,4 @@ public class ModuleLoader(string _baseDirectory)
 
 		return fullPath;
 	}
-
-
 }
