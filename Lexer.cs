@@ -13,6 +13,7 @@ public enum TokenType
 	Equals,
 	Func, Is, Return,
 	Struct, Shared,
+	Need, As,
 
 	EqualsEquals, LEqual, GEqual, Lesser, Greater, NotEquals,
 	AndAnd, OrOr,
@@ -69,6 +70,8 @@ public class Lexer(string _source)
 		{"continue", TokenType.Continue},
 		{"struct", TokenType.Struct},
 		{"shared", TokenType.Shared},
+		{"need", TokenType.Need},
+		{"as", TokenType.As},
 	};
 
 	void Advance()

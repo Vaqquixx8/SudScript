@@ -12,15 +12,6 @@ Language Features
 [ ] Member Access / Structs
 [ ] Control Flow Improvements
 [ ] Modules (group / need)
-...
-[ ] Compiler
-
-Control Flow Improvements
--------------------------
-[ ] Named loops
-    [ ] Loop identifiers
-    [ ] break <loopName>
-    [ ] continue <loopName>
 
 Lists
 -----
@@ -44,8 +35,7 @@ Member Access / Structs
         [x] Instance
         [x] Shared
 
-[ ] Modules
-    [ ] group
+[ ] Modules (Structs)
     [ ] need
     [ ] alias
 
@@ -72,14 +62,9 @@ Member Access / Structs
             [ ] PI Constant
             [ ] E Constant
 
-Compiler
---------
-[ ] Write a Compiler
-    [?] Into C?
-    [?] Into C++?
-    [?] Into Odin? <- My most likely
-    [?] Into ASM? 0_0
-    [?] Into C#?
-        [ ] Bootstrapping
-            [ ] Rewrite Compiler in SudScript
-            [ ] Garbage Collection
+Control Flow Improvements
+-------------------------
+[ ] Named loops
+    [ ] Loop identifiers
+    [ ] break <loopName>
+    [ ] continue <loopName>

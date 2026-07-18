@@ -19,6 +19,7 @@ public record StructInstanceValue(
 	string TypeName,
 	Dictionary<string, Value> Fields
 ) : Value;
+
 public record VoidValue() : Value;
 
 // =======================================================
@@ -69,6 +70,11 @@ public record BlockStatement(List<Statement> Body) : Statement;
 public record ReturnStatement(Expression Value) : Statement;
 public record BreakStatement() : Statement;
 public record ContinueStatement() : Statement;
+
+public record NeedImportStatement(
+	List<string> Path,
+	string? Alias
+) : Statement;
 
 // =======================================================
 // Expressions

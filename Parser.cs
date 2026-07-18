@@ -71,6 +71,7 @@ public class Parser(List<Token> _tokens)
 			TokenType.Break => ParseBreakStatement(),
 			TokenType.Continue => ParseContinueStatement(),
 			TokenType.Struct => ParseStructDeclaration(),
+			TokenType.Need => ParseNeedImportStatement(),
 			_ => ParseExpressionStatement(),
 		};
 	}
@@ -228,6 +229,27 @@ public class Parser(List<Token> _tokens)
 		}
 		Expect(TokenType.RightBrace);
 		return new StructDeclaration(nameToken.value, fields, methods);
+	}
+
+	NeedImportStatement ParseNeedImportStatement()
+	{
+		Consume();
+
+		List<string> path = [Expect(TokenType.Identifier).value];
+		while (Current.type == TokenType.Colon)
+		{
+			Consume();
+			path.Add(Expect(TokenType.Identifier).value);
+		}
+
+		string? alias = null;
+		if (Current.type == TokenType.As)
+		{
+			Consume();
+			alias = Expect(TokenType.Identifier).value;
+		}
+
+		return new NeedImportStatement(path, alias);
 	}
 
 	ExpressionStatement ParseExpressionStatement()

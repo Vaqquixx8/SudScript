@@ -4,24 +4,64 @@ public class Interpreter
 {
 	Environment environment = new Environment();
 	ProgramNode? program;
-
+	string modulesDirectory = null!;
 	readonly Dictionary<string, Func<List<Value>, Value>> builtins = new Dictionary<string, Func<List<Value>, Value>>();
+
+	public void SetModulesDirectory(string path)
+	{
+		modulesDirectory = path;
+	}
 
 	public void Initialize(ProgramNode _program)
 	{
 		program = _program;
-
 		environment = new Environment();
-
 		InitializeBuiltins();
 
-		// Register Structs
-		foreach(Statement statement in program.Body)
+		// Create module loader - use absolute path or fallback
+		string baseDir = modulesDirectory ??
+			Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "scripts");
+
+		// Ensure the path is absolute
+		if (!Path.IsPathRooted(baseDir))
 		{
-			if(statement is StructDeclaration s)
+			baseDir = Path.GetFullPath(baseDir);
+		}
+
+		var loader = new ModuleLoader(baseDir);
+
+		// First pass: collect all struct declarations (local + imported)
+		var allStructDeclarations = new List<StructDeclaration>();
+
+		foreach (var stmt in program.Body)
+		{
+			if (stmt is NeedImportStatement import)
 			{
-				environment.DefineStruct(s.Name, s);
+				try
+				{
+					var imported = loader.LoadModule(import.Path);
+					allStructDeclarations.AddRange(imported);
+				}
+				catch (Exception ex)
+				{
+					throw new Exception($"Failed to import module '{string.Join(":", import.Path)}': {ex.Message}");
+				}
 			}
+			else if (stmt is StructDeclaration s)
+			{
+				allStructDeclarations.Add(s);
+			}
+		}
+
+		// Register all structs
+		foreach (var s in allStructDeclarations)
+		{
+			if (environment.TryGetStruct(s.Name, out _))
+			{
+				throw new Exception($"Struct '{s.Name}' is already defined.");
+			}
+				
+			environment.DefineStruct(s.Name, s);
 		}
 
 		// Register Global Functions
@@ -32,6 +72,7 @@ public class Interpreter
 				environment.DefineFunction(function.Name, function);
 			}
 		}
+
 		// Register Global Variables
 		foreach (Statement statement in program.Body)
 		{
@@ -52,7 +93,7 @@ public class Interpreter
 			int max = (int)((NumberValue)args[1]).Value;
 
 			return new NumberValue(random.Next(min, max + 1));
-		};
+		}; 
 		builtins["say"] = args =>
 		{
 			foreach(Value value in args)
@@ -267,7 +308,6 @@ public class Interpreter
 
 	Value CallMethod(MethodCallExpression call)
 	{
-
 		List<Value> args = call.Args.Select(EvaluateExpression).ToList();
 
 		if(call.Target is IdentifierExpression id && environment.TryGetStruct(id.Name, out var decl))
@@ -504,9 +544,9 @@ public class Interpreter
 					Value left = EvaluateExpression(binary.Left);
 
 					if (IsTruthy(left))
-						{
-							return new BooleanValue(true);
-						}
+					{
+						return new BooleanValue(true);
+					}
 						
 
 					return new BooleanValue(IsTruthy(EvaluateExpression(binary.Right)));
@@ -529,17 +569,17 @@ public class Interpreter
 						return value;
 
 					case MemberAccessExpression member:
+					{
+						Value target = EvaluateExpression(member.Target);
+
+						if (target is StructInstanceValue instance)
 						{
-							Value target = EvaluateExpression(member.Target);
-
-							if (target is StructInstanceValue instance)
-							{
-								instance.Fields[member.Member] = value;
-								return value;
-							}
-
-							throw new Exception($"{target.GetType().Name} does not support member assignment.");
+							instance.Fields[member.Member] = value;
+							return value;
 						}
+
+						throw new Exception($"{target.GetType().Name} does not support member assignment.");
+					}
 
 					default:
 						throw new Exception("Invalid assignment target.");

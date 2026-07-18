@@ -2,7 +2,8 @@
 
 public class Program
 {
-	static readonly string testPath = "/mnt/HardDrive/Projects/SudScript/ScriptTests/SoftwareRenderer.sud";
+	static readonly string testPath = "/mnt/HardDrive/Projects/SudScript/src/ImportTest.sud";
+
 	static void Main()
 	{
 		string testScript = File.ReadAllText(testPath);
@@ -15,8 +16,10 @@ public class Program
 
 		Interpreter interpreter = new Interpreter();
 
-		interpreter.Initialize(prgm);
+		// Set the modules directory before initializing
+		interpreter.SetModulesDirectory("/mnt/HardDrive/Projects/SudScript/src/modules");
 
+		interpreter.Initialize(prgm);
 		interpreter.Execute();
 	}
 }
