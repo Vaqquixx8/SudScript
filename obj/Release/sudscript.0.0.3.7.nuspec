@@ -1,0 +1,20 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd">
+  <metadata>
+    <id>sudscript</id>
+    <version>0.0.3.7</version>
+    <authors>SudScript</authors>
+    <description>SudScript programming language CLI</description>
+    <packageTypes>
+      <packageType name="DotnetTool" />
+    </packageTypes>
+    <repository type="git" commit="e6593b508625d73b7e566306226124285f84348d" />
+  </metadata>
+  <files>
+    <file src="/mnt/HardDrive/Projects/SudScript/obj/Release/net9.0/DotnetToolSettings.xml" target="tools/net9.0/any/DotnetToolSettings.xml" />
+    <file src="/mnt/HardDrive/Projects/SudScript/bin/Release/net9.0/publish/SudScript.dll" target="tools/net9.0/any/SudScript.dll" />
+    <file src="/mnt/HardDrive/Projects/SudScript/bin/Release/net9.0/publish/SudScript.deps.json" target="tools/net9.0/any/SudScript.deps.json" />
+    <file src="/mnt/HardDrive/Projects/SudScript/bin/Release/net9.0/publish/SudScript.runtimeconfig.json" target="tools/net9.0/any/SudScript.runtimeconfig.json" />
+    <file src="/mnt/HardDrive/Projects/SudScript/bin/Release/net9.0/publish/SudScript.pdb" target="tools/net9.0/any/SudScript.pdb" />
+  </files>
+</package>

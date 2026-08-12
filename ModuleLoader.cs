@@ -5,16 +5,82 @@ public class ModuleLoader(string _baseDirectory)
 	string baseDirectory = _baseDirectory;
 	HashSet<string> loadedModules = new HashSet<string>();
 
+	readonly Dictionary<string, string> groupIndex = new Dictionary<string, string>();
+
+	public void BuildGroupIndex()
+	{
+		groupIndex.Clear();
+		loadedModules.Clear();
+
+		foreach (string filePath in Directory.EnumerateFiles(baseDirectory, "*.sud", SearchOption.AllDirectories))
+		{
+			string source = File.ReadAllText(filePath);
+
+			Lexer lexer = new Lexer(source);
+			List<Token> tokens = lexer.Tokenize();
+
+			Parser parser = new Parser(tokens);
+			ProgramNode program = parser.ParseProgram();
+
+			if (program.Body.Count == 0)
+			{
+				continue;
+			}
+
+			if (program.Body[0] is not GroupDeclaration group)
+			{
+				continue;
+			}
+
+			if (groupIndex.TryGetValue(group.Name, out string? existingPath))
+			{
+				throw new Exception(
+					$"Duplicate group declaration '{group.Name}':\n" +
+					$"  {existingPath}\n" +
+					$"  {filePath}"
+				);
+			}
+
+			groupIndex[group.Name] = filePath;
+		}
+	}
+
 	public List<StructDeclaration> LoadModule(List<string> path)
 	{
-		string moduleKey = string.Join(":", path);
+		string groupName = string.Join(":", path);
 
-		if (!loadedModules.Add(moduleKey))
+		List<StructDeclaration> structs = new List<StructDeclaration>();
+
+		foreach (string matchedGroup in FindGroups(groupName))
+		{
+			structs.AddRange(LoadGroup(matchedGroup));
+		}
+
+		return structs;
+	}
+
+	IEnumerable<string> FindGroups(string groupName)
+	{
+		string prefix = groupName + ":";
+
+		return groupIndex
+			.Keys
+			.Where(name => name == groupName || name.StartsWith(prefix, StringComparison.Ordinal))
+			.OrderBy(name => name);
+	}
+
+	List<StructDeclaration> LoadGroup(string groupName)
+	{
+		// Prevent loading the same group multiple times.
+		if (!loadedModules.Add(groupName))
 		{
 			return new List<StructDeclaration>();
 		}
 
-		string filePath = ResolveFilePath(path);
+		if (!groupIndex.TryGetValue(groupName, out string? filePath))
+		{
+			throw new Exception($"Group '{groupName}' was not found.");
+		}
 
 		string source = File.ReadAllText(filePath);
 
@@ -22,24 +88,25 @@ public class ModuleLoader(string _baseDirectory)
 		List<Token> tokens = lexer.Tokenize();
 
 		Parser parser = new Parser(tokens);
-		ProgramNode prgm = parser.ParseProgram();
+		ProgramNode program = parser.ParseProgram();
 
 		List<StructDeclaration> structs = new List<StructDeclaration>();
-		foreach(Statement statement in prgm.Body)
+
+		foreach (Statement statement in program.Body)
 		{
-			if(statement is NeedImportStatement import)
+			if (statement is NeedImportStatement import)
 			{
-				var imported = LoadModule(import.Path);
-				structs.AddRange(imported);
+				structs.AddRange(LoadModule(import.Path));
 			}
-			else if(statement is StructDeclaration structDecl)
+			else if (statement is StructDeclaration structDecl)
 			{
 				structs.Add(structDecl);
 			}
 		}
+
 		return structs;
 	}
-	
+
 	string ResolveFilePath(List<string> path)
 	{
 		string relative = string.Join("/", path) + ".sud";

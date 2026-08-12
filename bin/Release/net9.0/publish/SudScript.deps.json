@@ -6,7 +6,7 @@
   "compilationOptions": {},
   "targets": {
     ".NETCoreApp,Version=v9.0": {
-      "SudScript/0.0.3.5": {
+      "SudScript/0.0.3.7": {
         "runtime": {
           "SudScript.dll": {}
         }
@@ -14,7 +14,7 @@
     }
   },
   "libraries": {
-    "SudScript/0.0.3.5": {
+    "SudScript/0.0.3.7": {
       "type": "project",
       "serviceable": false,
       "sha512": ""

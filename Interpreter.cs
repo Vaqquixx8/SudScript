@@ -1,5 +1,3 @@
-using System.ComponentModel;
-
 namespace SudScript;
 
 public class Interpreter
@@ -21,7 +19,7 @@ public class Interpreter
 		InitializeBuiltins();
 
 		// Create module loader - use absolute path or fallback
-		string baseDir = "";
+		string baseDir;
 		if (modulesDirectory == null)
 		{
 			throw new Exception($"No modules directory set.");
@@ -38,6 +36,7 @@ public class Interpreter
 		}
 
 		var loader = new ModuleLoader(baseDir);
+		loader.BuildGroupIndex();
 
 		// First pass: collect all struct declarations (local + imported)
 		var allStructDeclarations = new List<StructDeclaration>();

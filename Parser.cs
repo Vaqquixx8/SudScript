@@ -81,9 +81,9 @@ public class Parser(List<Token> _tokens)
 	{
 		Consume();
 
-		string groupName = Expect(TokenType.Identifier).value;
+		List<string> path = ParseQualifiedName();
 
-		return new GroupDeclaration(groupName);
+		return new GroupDeclaration(string.Join(":", path));
 	}
 
 	VariableDeclaration ParseVariableDeclaration()
@@ -245,14 +245,10 @@ public class Parser(List<Token> _tokens)
 	{
 		Consume();
 
-		List<string> path = [Expect(TokenType.Identifier).value];
-		while (Current.type == TokenType.Colon)
-		{
-			Consume();
-			path.Add(Expect(TokenType.Identifier).value);
-		}
+		List<string> path = ParseQualifiedName();
 
 		string? alias = null;
+
 		if (Current.type == TokenType.As)
 		{
 			Consume();
@@ -546,5 +542,17 @@ public class Parser(List<Token> _tokens)
 			default:
 				throw new Exception($"Unexpected token {Current}.");
 		}
+	}
+
+	List<string> ParseQualifiedName()
+	{
+		List<string> parts = [Expect(TokenType.Identifier).value];
+
+		while (Match(TokenType.Colon))
+		{
+			parts.Add(Expect(TokenType.Identifier).value);
+		}
+
+		return parts;
 	}
 }
