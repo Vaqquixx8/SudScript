@@ -11,7 +11,7 @@
     "/home/josh/.nuget/packages/": {}
   },
   "project": {
-    "version": "0.0.3.2",
+    "version": "0.0.3.5",
     "restore": {
       "projectUniqueName": "/mnt/HardDrive/Projects/SudScript/SudScript.csproj",
       "projectName": "sudscript",
@@ -65,7 +65,7 @@
             "privateAssets": "all"
           }
         },
-        "runtimeIdentifierGraphPath": "/usr/share/dotnet/sdk/9.0.316/PortableRuntimeIdentifierGraph.json"
+        "runtimeIdentifierGraphPath": "/usr/share/dotnet/sdk/9.0.317/PortableRuntimeIdentifierGraph.json"
       }
     }
   }

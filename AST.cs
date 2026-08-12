@@ -76,6 +76,8 @@ public record NeedImportStatement(
 	string? Alias
 ) : Statement;
 
+public record GroupDeclaration(string Name) : Statement;
+
 // =======================================================
 // Expressions
 // =======================================================

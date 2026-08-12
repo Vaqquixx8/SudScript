@@ -39,6 +39,11 @@ Member Access / Structs
 [ ] Modules (Structs)
     [x] need
     [ ] alias
+    [ ] Re-Factor
+        [ ] groups
+        [ ] Only 'shared' Structs
+        [ ] Allow Functions (Top-Level, shared)
+        [ ] Allow Variables (Top-Level, shared)
 
 [ ] Standard Library Modules
     [ ] Add Sud:... Standard Library
@@ -65,14 +70,14 @@ Member Access / Structs
 
 Allow Sud Projects
 ------------------
-[ ] SudManifest
-    [ ] ROOTPATH/Sud.SudManifest
-        [ ] Project Name
-        [ ] Paths
-            [ ] Project Relative Paths
-                [ ] /src
-                [ ] /src/Main.sud
-                [ ] /src/Modules/
+[x] SudManifest
+    [x] ROOTPATH/Sud.SudManifest
+        [x] Project Name
+        [x] Paths
+            [x] Project Relative Paths
+                [x] /src
+                [x] /src/Main.sud
+                [x] /src/Modules/
 
 Control Flow Improvements
 -------------------------

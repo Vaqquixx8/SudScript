@@ -72,8 +72,18 @@ public class Parser(List<Token> _tokens)
 			TokenType.Continue => ParseContinueStatement(),
 			TokenType.Struct => ParseStructDeclaration(),
 			TokenType.Need => ParseNeedImportStatement(),
+			TokenType.Group => ParseGroupDeclaration(),
 			_ => ParseExpressionStatement(),
 		};
+	}
+
+	GroupDeclaration ParseGroupDeclaration()
+	{
+		Consume();
+
+		string groupName = Expect(TokenType.Identifier).value;
+
+		return new GroupDeclaration(groupName);
 	}
 
 	VariableDeclaration ParseVariableDeclaration()
