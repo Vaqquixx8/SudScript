@@ -8,7 +8,7 @@
     <packageTypes>
       <packageType name="DotnetTool" />
     </packageTypes>
-    <repository type="git" commit="e6593b508625d73b7e566306226124285f84348d" />
+    <repository type="git" commit="a80a89d6af8a1e61fc66dfe677b147f9c966a149" />
   </metadata>
   <files>
     <file src="/mnt/HardDrive/Projects/SudScript/obj/Release/net9.0/DotnetToolSettings.xml" target="tools/net9.0/any/DotnetToolSettings.xml" />

@@ -493,7 +493,7 @@ public class Parser(List<Token> _tokens)
 			{
 				expr = new MemberAccessExpression(expr, member.value);
 			}
-			
+
 		}
 		return expr;
 	}

@@ -20,3 +20,8 @@ Run current Project
 cd {project_directory}
 sud run
 ```
+
+Uninstall SudScript
+```bash
+dotnet tool uninstall --global sudscript
+```

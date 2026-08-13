@@ -37,13 +37,15 @@ Member Access / Structs
         [x] Shared
 
 [ ] Modules (Structs)
-    [x] need
-    [ ] alias (need <import/group name> as <alias>)
+    [ ] need
+    	[x] Import Groups
+    	[ ] Qualified Name Access
+    		[ ] alias (need <import/group name> as <alias>)
     [ ] Re-Factor
         [x] groups (group <group name>)
             [x] File-Name independant searching (Find by group name declaration)
             [x] SubGroups (group myGroup:mySubGroup)
-                [ ] Import all subgroups below highest level group declaration
+                [x] Import all subgroups below highest level group declaration
                 (with 'a:b:c' - 'need a' imports 'a', 'a:b', 'a:b:c')
                 (with 'a:b:c' - 'need a:b' imports 'a:b', 'a:b:c')
         [ ] Only 'shared' Structs

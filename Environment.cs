@@ -6,7 +6,14 @@ public class Environment(Environment? parent = null)
 	readonly Dictionary<string, FunctionDeclaration> functions = new Dictionary<string, FunctionDeclaration>();
 	readonly Dictionary<string, StructDeclaration> structs = new Dictionary<string, StructDeclaration>();
 
+	readonly List<Environment> imports = new List<Environment>();
+
 	public Environment? Parent { get; } = parent;
+
+	public void AddImport(Environment imported)
+	{
+		imports.Add(imported);
+	}
 
 	public void DefineVariable(string name, Value value)
 	{
@@ -30,9 +37,27 @@ public class Environment(Environment? parent = null)
 			return true;
 		}
 
-		return Parent?.TryGetVariable(name, out value) ?? false;
+		if (Parent != null && Parent.TryGetVariable(name, out value))
+		{
+			return true;
+		}
+
+		foreach (var import in imports)
+		{
+			if (import.TryGetOwnVariable(name, out value))
+			{
+				return true;
+			}
+		}
+
+		value = default!;
+		return false;
 	}
 
+	public bool TryGetOwnVariable(string name, out Value value)
+	{
+		return values.TryGetValue(name, out value!);
+	}
 
 	public void AssignVariable(string name, Value value)
 	{
@@ -74,9 +99,27 @@ public class Environment(Environment? parent = null)
 			return true;
 		}
 
-		return Parent?.TryGetFunction(name, out function) ?? false;
+		if (Parent != null && Parent.TryGetFunction(name, out function))
+		{
+			return true;
+		}
+
+		foreach (var import in imports)
+		{
+			if (import.TryGetOwnFunction(name, out function))
+			{
+				return true;
+			}
+		}
+
+		function = default!;
+		return false;
 	}
 
+	public bool TryGetOwnFunction(string name, out FunctionDeclaration function)
+	{
+		return functions.TryGetValue(name, out function!);
+	}
 
 	public void DefineStruct(string name, StructDeclaration declaration)
 	{
@@ -100,6 +143,25 @@ public class Environment(Environment? parent = null)
 			return true;
 		}
 
-		return Parent?.TryGetStruct(name, out declaration) ?? false;
+		if (Parent != null && Parent.TryGetStruct(name, out declaration))
+		{
+			return true;
+		}
+
+		foreach (var import in imports)
+		{
+			if (import.TryGetOwnStruct(name, out declaration))
+			{
+				return true;
+			}
+		}
+
+		declaration = default!;
+		return false;
+	}
+
+	public bool TryGetOwnStruct(string name, out StructDeclaration declaration)
+	{
+		return structs.TryGetValue(name, out declaration!);
 	}
 }

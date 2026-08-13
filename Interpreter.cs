@@ -18,7 +18,6 @@ public class Interpreter
 		environment = new Environment();
 		InitializeBuiltins();
 
-		// Create module loader - use absolute path or fallback
 		string baseDir;
 		if (modulesDirectory == null)
 		{
@@ -29,7 +28,6 @@ public class Interpreter
 			baseDir = modulesDirectory;
 		}
 
-		// Ensure the path is absolute
 		if (!Path.IsPathRooted(baseDir))
 		{
 			baseDir = Path.GetFullPath(baseDir);
@@ -38,38 +36,35 @@ public class Interpreter
 		var loader = new ModuleLoader(baseDir);
 		loader.BuildGroupIndex();
 
-		// First pass: collect all struct declarations (local + imported)
-		var allStructDeclarations = new List<StructDeclaration>();
-
 		foreach (var stmt in program.Body)
 		{
 			if (stmt is NeedImportStatement import)
 			{
 				try
 				{
-					var imported = loader.LoadModule(import.Path);
-					allStructDeclarations.AddRange(imported);
+					foreach (var moduleEnv in loader.LoadModule(import.Path))
+					{
+						environment.AddImport(moduleEnv);
+					}
 				}
 				catch (Exception ex)
 				{
 					throw new Exception($"Failed to import module '{string.Join(":", import.Path)}': {ex.Message}");
 				}
 			}
-			else if (stmt is StructDeclaration s)
-			{
-				allStructDeclarations.Add(s);
-			}
 		}
 
-		// Register all structs
-		foreach (var s in allStructDeclarations)
+		foreach (var stmt in program.Body)
 		{
-			if (environment.TryGetStruct(s.Name, out _))
+			if (stmt is StructDeclaration s)
 			{
-				throw new Exception($"Struct '{s.Name}' is already defined.");
+				if (environment.TryGetOwnStruct(s.Name, out _))
+				{
+					throw new Exception($"Struct '{s.Name}' is already defined.");
+				}
+
+				environment.DefineStruct(s.Name, s);
 			}
-				
-			environment.DefineStruct(s.Name, s);
 		}
 
 		// Register Global Functions
@@ -101,7 +96,7 @@ public class Interpreter
 			int max = (int)((NumberValue)args[1]).Value;
 
 			return new NumberValue(random.Next(min, max + 1));
-		}; 
+		};
 		builtins["say"] = args =>
 		{
 			foreach(Value value in args)
@@ -113,19 +108,39 @@ public class Interpreter
 		};
 		builtins["stringToNumber"] = args =>
 		{
-			return new NumberValue(float.Parse(ToText(args[0])));	
+			return new NumberValue(float.Parse(ToText(args[0])));
 		};
 		builtins["stringToBool"] = args =>
 		{
 			return new BooleanValue(bool.Parse(ToText(args[0])));
-		}; 
+		};
 		builtins["toString"] = args =>
 		{
 			return new StringValue(ToText(args[0]));
 		};
 		builtins["sqrt"] = args =>
 		{
-			return new NumberValue(MathF.Sqrt(float.Parse(ToText(args[0]))));	
+			return new NumberValue(MathF.Sqrt(float.Parse(ToText(args[0]))));
+		};
+		builtins["sin"] = args =>
+		{
+			return new NumberValue(MathF.Sin(float.Parse(ToText(args[0]))));
+		};
+		builtins["cos"] = args =>
+		{
+			return new NumberValue(MathF.Cos(float.Parse(ToText(args[0]))));
+		};
+		builtins["tan"] = args =>
+		{
+			return new NumberValue(MathF.Tan(float.Parse(ToText(args[0]))));
+		};
+		builtins["atan"] = args =>
+		{
+			return new NumberValue(MathF.Atan(float.Parse(ToText(args[0]))));
+		};
+		builtins["atan2"] = args =>
+		{
+			return new NumberValue(MathF.Atan2(float.Parse(ToText(args[0])), float.Parse(ToText(args[1]))));
 		};
 	}
 
@@ -163,7 +178,7 @@ public class Interpreter
 
 			case BlockStatement block:
 				return ExecuteBlock(block);
-			
+
 			case IfStatement ifStatement:
 				return ExecuteIf(ifStatement);
 
@@ -304,7 +319,7 @@ public class Interpreter
 			{
 				return result.Value!;
 			}
-				
+
 
 			return new VoidValue();
 		}
@@ -525,7 +540,7 @@ public class Interpreter
 			case UnaryExpression unary:
 			{
 				Value Right = EvaluateExpression(unary.Right);
-				
+
 				return unary.Op switch
 				{
 					TokenType.Minus when Right is NumberValue n => new NumberValue(-n.Value),
@@ -555,7 +570,7 @@ public class Interpreter
 					{
 						return new BooleanValue(true);
 					}
-						
+
 
 					return new BooleanValue(IsTruthy(EvaluateExpression(binary.Right)));
 				}
@@ -683,7 +698,7 @@ public class Interpreter
 			(ListValue a, ListValue b) =>
 				a.Values.Count == b.Values.Count &&
 				a.Values.Zip(b.Values).All(pair => AreEqual(pair.First, pair.Second)),
-			(StructInstanceValue a, StructInstanceValue b) => 
+			(StructInstanceValue a, StructInstanceValue b) =>
 				a.TypeName == b.TypeName &&
 				a.Fields.Keys.All(k  => AreEqual(a.Fields[k], b.Fields[k])),
 			_ => false
@@ -712,7 +727,7 @@ public class Interpreter
 			BooleanValue b => b.Value,
 			NumberValue n => n.Value > 0f,
 			StringValue s => !string.IsNullOrEmpty(s.Value),
-			
+
 			_ => throw new Exception($"Cannot use {Value.GetType().Name} as a Condition.")
 		};
 	}

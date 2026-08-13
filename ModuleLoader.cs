@@ -3,16 +3,18 @@ namespace SudScript;
 public class ModuleLoader(string _baseDirectory)
 {
 	string baseDirectory = _baseDirectory;
-	HashSet<string> loadedModules = new HashSet<string>();
 
 	readonly Dictionary<string, string> groupIndex = new Dictionary<string, string>();
+	readonly Dictionary<string, Environment> moduleEnvironments = new Dictionary<string, Environment>();
+	readonly HashSet<string> loadingStack = new HashSet<string>();
 
 	public void BuildGroupIndex()
 	{
 		groupIndex.Clear();
-		loadedModules.Clear();
+		moduleEnvironments.Clear();
+		loadingStack.Clear();
 
-		foreach (string filePath in Directory.EnumerateFiles(baseDirectory, "*.sud", SearchOption.AllDirectories))
+		foreach(string filePath in Directory.EnumerateFiles(baseDirectory, "*.sud", SearchOption.AllDirectories))
 		{
 			string source = File.ReadAllText(filePath);
 
@@ -22,17 +24,17 @@ public class ModuleLoader(string _baseDirectory)
 			Parser parser = new Parser(tokens);
 			ProgramNode program = parser.ParseProgram();
 
-			if (program.Body.Count == 0)
+			if(program.Body.Count == 0)
 			{
 				continue;
 			}
 
-			if (program.Body[0] is not GroupDeclaration group)
+			if(program.Body[0] is not GroupDeclaration group)
 			{
 				continue;
 			}
 
-			if (groupIndex.TryGetValue(group.Name, out string? existingPath))
+			if(groupIndex.TryGetValue(group.Name, out string? existingPath))
 			{
 				throw new Exception(
 					$"Duplicate group declaration '{group.Name}':\n" +
@@ -45,18 +47,18 @@ public class ModuleLoader(string _baseDirectory)
 		}
 	}
 
-	public List<StructDeclaration> LoadModule(List<string> path)
+	public List<Environment> LoadModule(List<string> path)
 	{
 		string groupName = string.Join(":", path);
 
-		List<StructDeclaration> structs = new List<StructDeclaration>();
+		var environments = new List<Environment>();
 
-		foreach (string matchedGroup in FindGroups(groupName))
+		foreach(string matchedGroup in FindGroups(groupName))
 		{
-			structs.AddRange(LoadGroup(matchedGroup));
+			environments.Add(LoadGroupEnvironment(matchedGroup));
 		}
 
-		return structs;
+		return environments;
 	}
 
 	IEnumerable<string> FindGroups(string groupName)
@@ -69,17 +71,21 @@ public class ModuleLoader(string _baseDirectory)
 			.OrderBy(name => name);
 	}
 
-	List<StructDeclaration> LoadGroup(string groupName)
+	Environment LoadGroupEnvironment(string groupName)
 	{
-		// Prevent loading the same group multiple times.
-		if (!loadedModules.Add(groupName))
+		if(moduleEnvironments.TryGetValue(groupName, out var cached))
 		{
-			return new List<StructDeclaration>();
+			return cached;
 		}
 
-		if (!groupIndex.TryGetValue(groupName, out string? filePath))
+		if(!groupIndex.TryGetValue(groupName, out string? filePath))
 		{
 			throw new Exception($"Group '{groupName}' was not found.");
+		}
+
+		if(!loadingStack.Add(groupName))
+		{
+			throw new Exception($"Circular import detected involving group '{groupName}'.");
 		}
 
 		string source = File.ReadAllText(filePath);
@@ -90,37 +96,31 @@ public class ModuleLoader(string _baseDirectory)
 		Parser parser = new Parser(tokens);
 		ProgramNode program = parser.ParseProgram();
 
-		List<StructDeclaration> structs = new List<StructDeclaration>();
+		var moduleEnv = new Environment();
 
-		foreach (Statement statement in program.Body)
+		foreach(Statement statement in program.Body)
 		{
-			if (statement is NeedImportStatement import)
+			if(statement is NeedImportStatement import)
 			{
-				structs.AddRange(LoadModule(import.Path));
+				foreach(var importedEnv in LoadModule(import.Path))
+				{
+					moduleEnv.AddImport(importedEnv);
+				}
 			}
-			else if (statement is StructDeclaration structDecl)
+			else if(statement is StructDeclaration structDecl)
 			{
-				structs.Add(structDecl);
+				if(moduleEnv.TryGetOwnStruct(structDecl.Name, out _))
+				{
+					throw new Exception($"Struct '{structDecl.Name}' is already defined in group '{groupName}'.");
+				}
+
+				moduleEnv.DefineStruct(structDecl.Name, structDecl);
 			}
 		}
 
-		return structs;
-	}
+		loadingStack.Remove(groupName);
+		moduleEnvironments[groupName] = moduleEnv;
 
-	string ResolveFilePath(List<string> path)
-	{
-		string relative = string.Join("/", path) + ".sud";
-		string fullPath = Path.GetFullPath(Path.Combine(baseDirectory, relative));
-
-		if (!File.Exists(fullPath))
-		{
-			throw new FileNotFoundException(
-				$"Module file not found: {fullPath}\n" +
-				$"Base directory: {baseDirectory}\n" +
-				$"Relative path: {relative}"
-			);
-		}
-
-		return fullPath;
+		return moduleEnv;
 	}
 }
