@@ -1,18 +1,15 @@
 namespace SudScript;
-
 public class ModuleLoader(string _baseDirectory)
 {
 	string baseDirectory = _baseDirectory;
 
 	readonly Dictionary<string, string> groupIndex = new Dictionary<string, string>();
 	readonly Dictionary<string, Environment> moduleEnvironments = new Dictionary<string, Environment>();
-	readonly HashSet<string> loadingStack = new HashSet<string>();
 
 	public void BuildGroupIndex()
 	{
 		groupIndex.Clear();
 		moduleEnvironments.Clear();
-		loadingStack.Clear();
 
 		foreach(string filePath in Directory.EnumerateFiles(baseDirectory, "*.sud", SearchOption.AllDirectories))
 		{
@@ -83,10 +80,8 @@ public class ModuleLoader(string _baseDirectory)
 			throw new Exception($"Group '{groupName}' was not found.");
 		}
 
-		if(!loadingStack.Add(groupName))
-		{
-			throw new Exception($"Circular import detected involving group '{groupName}'.");
-		}
+		var moduleEnv = new Environment();
+		moduleEnvironments[groupName] = moduleEnv;
 
 		string source = File.ReadAllText(filePath);
 
@@ -95,8 +90,6 @@ public class ModuleLoader(string _baseDirectory)
 
 		Parser parser = new Parser(tokens);
 		ProgramNode program = parser.ParseProgram();
-
-		var moduleEnv = new Environment();
 
 		foreach(Statement statement in program.Body)
 		{
@@ -111,15 +104,14 @@ public class ModuleLoader(string _baseDirectory)
 			{
 				if(moduleEnv.TryGetOwnStruct(structDecl.Name, out _))
 				{
-					throw new Exception($"Struct '{structDecl.Name}' is already defined in group '{groupName}'.");
+					throw new Exception(
+						$"Struct '{structDecl.Name}' is already defined in group '{groupName}'."
+					);
 				}
 
 				moduleEnv.DefineStruct(structDecl.Name, structDecl);
 			}
 		}
-
-		loadingStack.Remove(groupName);
-		moduleEnvironments[groupName] = moduleEnv;
 
 		return moduleEnv;
 	}

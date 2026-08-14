@@ -101,7 +101,6 @@ modules = ""src/Modules""
 
 		string mainScript =
 @"
-// Main.sud
 func main()
 {
 	say(""Hello World!"")
@@ -128,7 +127,7 @@ func main()
 		{
 			dir = new DirectoryInfo(startPath);
 		}
-			
+
 		while (dir != null)
 		{
 			string manifest = Path.Combine(dir.FullName, "sud.manifest");

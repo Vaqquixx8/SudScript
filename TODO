@@ -29,7 +29,7 @@ Lists
     [x] :contains()
 
 Member Access / Structs
--------------
+-----------------------
 [x] Structs
     [x] Fields
     [x] Methods
@@ -48,6 +48,7 @@ Member Access / Structs
                 [x] Import all subgroups below highest level group declaration
                 (with 'a:b:c' - 'need a' imports 'a', 'a:b', 'a:b:c')
                 (with 'a:b:c' - 'need a:b' imports 'a:b', 'a:b:c')
+                [x] Allow Circular need statements
         [ ] Only 'shared' Structs
         [ ] Allow Functions (Top-Level, shared)
         [ ] Allow Variables (Top-Level, shared)
@@ -92,3 +93,7 @@ Control Flow Improvements
     [ ] Loop identifiers
     [ ] break <loopName>
     [ ] continue <loopName>
+[ ] Misc
+	[ ] /=/*=/+=/-= operator
+	[ ] ++/-- operator
+[ ] Empty variable declarations "let myVar" <- default null value
