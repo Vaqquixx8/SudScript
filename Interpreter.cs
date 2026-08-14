@@ -571,7 +571,6 @@ public class Interpreter
 						return new BooleanValue(true);
 					}
 
-
 					return new BooleanValue(IsTruthy(EvaluateExpression(binary.Right)));
 				}
 

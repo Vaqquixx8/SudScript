@@ -19,14 +19,14 @@ Lists
 [x] Parse
 [x] Runtime Object
 [x] Functions
-    [x] :get()
-    [x] :set()
-    [x] :add()
-    [x] :remove()
-    [x] :size()
-    [x] :fill()
-    [x] :clear()
-    [x] :contains()
+    [x] :get(index) -> any
+    [x] :set(index, thing) -> void
+    [x] :add(thing) -> void
+    [x] :remove(thing) -> void
+    [x] :size() -> number
+    [x] :fill(thing) -> void
+    [x] :clear() -> void
+    [x] :contains(thing) -> bool
 
 Member Access / Structs
 -----------------------
@@ -39,9 +39,9 @@ Member Access / Structs
 [ ] Modules (Structs)
     [ ] need
     	[x] Import Groups
-    	[ ] Qualified Name Access
+    	[ ] Qualified Name Access ------------------------------ Why the fuck is this so hard!?
     		[ ] alias (need <import/group name> as <alias>)
-    [ ] Re-Factor
+    [x] Re-Factor
         [x] groups (group <group name>)
             [x] File-Name independant searching (Find by group name declaration)
             [x] SubGroups (group myGroup:mySubGroup)
@@ -49,32 +49,12 @@ Member Access / Structs
                 (with 'a:b:c' - 'need a' imports 'a', 'a:b', 'a:b:c')
                 (with 'a:b:c' - 'need a:b' imports 'a:b', 'a:b:c')
                 [x] Allow Circular need statements
-        [ ] Only 'shared' Structs
-        [ ] Allow Functions (Top-Level, shared)
-        [ ] Allow Variables (Top-Level, shared)
 
-[ ] Standard Library Modules
-    [ ] Add Sud:... Standard Library
+[ ] Standard Library Modules (Separate from built-in functions, eg. list[] :add(), :remove() etc.)
     [ ] Add Sud:Debug
         [ ] Move say() into Sud:Debug
     [ ] Add Sud:Math
-        [ ] Modules
-        [ ] Members
-            [ ] sqrt()
-            [ ] sin()
-            [ ] cos()
-            [ ] tan()
-            [ ] atan()
-            [ ] atan2()
-            [ ] floor()
-            [ ] ceil()
-            [ ] round()
-            [ ] clamp()
-            [ ] lerp()
-            [ ] degToRad()
-            [ ] radToDeg()
-            [ ] PI Constant
-            [ ] E Constant
+    	[ ] Move all current Math Functions into Sud:Math
 
 Allow Sud Projects
 ------------------
@@ -97,3 +77,11 @@ Control Flow Improvements
 	[ ] /=/*=/+=/-= operator
 	[ ] ++/-- operator
 [ ] Empty variable declarations "let myVar" <- default null value
+
+Endgame Shit
+------------
+[ ] Rewrite in Odin
+	[ ] Initial Rewrite
+	[ ] New CLI
+[ ] Bootstrap
+	[ ] Rewrite Again

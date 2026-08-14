@@ -1,5 +1,0 @@
-project = "Hello World"
-
-entry = "src/Main.sud"
-
-modules = "src/Modules"

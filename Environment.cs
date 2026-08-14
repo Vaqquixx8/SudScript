@@ -76,7 +76,6 @@ public class Environment(Environment? parent = null)
 		throw new Exception($"Undefined variable '{name}'");
 	}
 
-
 	public void DefineFunction(string name, FunctionDeclaration function)
 	{
 		functions[name] = function;
