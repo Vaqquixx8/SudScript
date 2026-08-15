@@ -103,7 +103,7 @@ modules = ""src/Modules""
 @"
 func main()
 {
-	say(""Hello World!"")
+	consoleSay(""Hello World!"")
 }
 ";
 

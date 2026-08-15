@@ -76,6 +76,11 @@ Control Flow Improvements
 [ ] Misc
 	[ ] /=/*=/+=/-= operator
 	[ ] ++/-- operator
+	[ ] Block Comments
+	/* This
+	is all a
+	single
+	comment */
 [ ] Empty variable declarations "let myVar" <- default null value
 
 Endgame Shit

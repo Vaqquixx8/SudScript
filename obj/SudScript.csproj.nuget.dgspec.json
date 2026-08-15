@@ -5,7 +5,7 @@
   },
   "projects": {
     "/mnt/HardDrive/Projects/SudScript/SudScript.csproj": {
-      "version": "0.0.3.7",
+      "version": "0.0.3.8",
       "restore": {
         "projectUniqueName": "/mnt/HardDrive/Projects/SudScript/SudScript.csproj",
         "projectName": "sudscript",

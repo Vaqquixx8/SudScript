@@ -1,11 +1,15 @@
 namespace SudScript;
 
+using System.Threading;
+using System.Diagnostics;
 public class Interpreter
 {
 	Environment environment = new Environment();
 	ProgramNode? program;
 	string modulesDirectory = null!;
 	readonly Dictionary<string, Func<List<Value>, Value>> builtins = new Dictionary<string, Func<List<Value>, Value>>();
+
+	Stopwatch stopwatch = new Stopwatch();
 
 	public void SetModulesDirectory(string path)
 	{
@@ -16,6 +20,7 @@ public class Interpreter
 	{
 		program = _program;
 		environment = new Environment();
+		stopwatch = Stopwatch.StartNew();
 		InitializeBuiltins();
 
 		string baseDir;
@@ -97,13 +102,18 @@ public class Interpreter
 
 			return new NumberValue(random.Next(min, max + 1));
 		};
-		builtins["say"] = args =>
+		builtins["consoleSay"] = args =>
 		{
 			foreach(Value value in args)
 			{
 				Console.Write(ToText(value));
 			}
 			Console.Write('\n');
+			return new VoidValue();
+		};
+		builtins["consoleClear"] = args =>
+		{
+			Console.Clear();
 			return new VoidValue();
 		};
 		builtins["stringToNumber"] = args =>
@@ -141,6 +151,48 @@ public class Interpreter
 		builtins["atan2"] = args =>
 		{
 			return new NumberValue(MathF.Atan2(float.Parse(ToText(args[0])), float.Parse(ToText(args[1]))));
+		};
+		builtins["floor"] = args =>
+		{
+			return new NumberValue(MathF.Floor(float.Parse(ToText(args[0]))));
+		};
+		builtins["ceil"] = args =>
+		{
+			return new NumberValue(MathF.Ceiling(float.Parse(ToText(args[0]))));
+		};
+		builtins["round"] = args =>
+		{
+			return new NumberValue(MathF.Round(float.Parse(ToText(args[0]))));
+		};
+		builtins["min"] = args =>
+		{
+		    float a = float.Parse(ToText(args[0]));
+		    float b = float.Parse(ToText(args[1]));
+
+		    return new NumberValue(MathF.Min(a, b));
+		};
+
+		builtins["max"] = args =>
+		{
+		    float a = float.Parse(ToText(args[0]));
+		    float b = float.Parse(ToText(args[1]));
+
+		    return new NumberValue(MathF.Max(a, b));
+		};
+		builtins["wait"] = args =>
+		{
+		    float seconds = float.Parse(ToText(args[0]));
+
+		    if (seconds > 0)
+			{
+				Thread.Sleep((int)(seconds * 1000));
+			}
+
+		    return new VoidValue();
+		};
+		builtins["time"] = args =>
+		{
+		    return new NumberValue((float)stopwatch.Elapsed.TotalSeconds);
 		};
 	}
 

@@ -3,7 +3,7 @@ public class ModuleLoader(string _baseDirectory)
 {
 	string baseDirectory = _baseDirectory;
 
-	readonly Dictionary<string, string> groupIndex = new Dictionary<string, string>();
+	readonly Dictionary<string, List<string>> groupIndex = new Dictionary<string, List<string>>();
 	readonly Dictionary<string, Environment> moduleEnvironments = new Dictionary<string, Environment>();
 
 	public void BuildGroupIndex()
@@ -31,16 +31,13 @@ public class ModuleLoader(string _baseDirectory)
 				continue;
 			}
 
-			if(groupIndex.TryGetValue(group.Name, out string? existingPath))
+			if(!groupIndex.TryGetValue(group.Name, out var paths))
 			{
-				throw new Exception(
-					$"Duplicate group declaration '{group.Name}':\n" +
-					$"  {existingPath}\n" +
-					$"  {filePath}"
-				);
+				paths = new List<string>();
+				groupIndex[group.Name] = paths;
 			}
 
-			groupIndex[group.Name] = filePath;
+			paths.Add(filePath);
 		}
 	}
 
@@ -50,9 +47,9 @@ public class ModuleLoader(string _baseDirectory)
 
 		var environments = new List<Environment>();
 
-		foreach(string matchedGroup in FindGroups(groupName))
+		foreach(string filePath in FindGroups(groupName))
 		{
-			environments.Add(LoadGroupEnvironment(matchedGroup));
+			environments.Add(LoadGroupEnvironment(filePath));
 		}
 
 		return environments;
@@ -63,25 +60,20 @@ public class ModuleLoader(string _baseDirectory)
 		string prefix = groupName + ":";
 
 		return groupIndex
-			.Keys
-			.Where(name => name == groupName || name.StartsWith(prefix, StringComparison.Ordinal))
-			.OrderBy(name => name);
+			.Where(pair => pair.Key == groupName || pair.Key.StartsWith(prefix, StringComparison.Ordinal))
+			.OrderBy(pair => pair.Key)
+			.SelectMany(pair => pair.Value);
 	}
 
-	Environment LoadGroupEnvironment(string groupName)
+	Environment LoadGroupEnvironment(string filePath)
 	{
-		if(moduleEnvironments.TryGetValue(groupName, out var cached))
+		if(moduleEnvironments.TryGetValue(filePath, out var cached))
 		{
 			return cached;
 		}
 
-		if(!groupIndex.TryGetValue(groupName, out string? filePath))
-		{
-			throw new Exception($"Group '{groupName}' was not found.");
-		}
-
 		var moduleEnv = new Environment();
-		moduleEnvironments[groupName] = moduleEnv;
+		moduleEnvironments[filePath] = moduleEnv;
 
 		string source = File.ReadAllText(filePath);
 
@@ -90,6 +82,8 @@ public class ModuleLoader(string _baseDirectory)
 
 		Parser parser = new Parser(tokens);
 		ProgramNode program = parser.ParseProgram();
+
+		string groupName = program.Body.FirstOrDefault() is GroupDeclaration group ? group.Name : filePath;
 
 		foreach(Statement statement in program.Body)
 		{
@@ -104,9 +98,7 @@ public class ModuleLoader(string _baseDirectory)
 			{
 				if(moduleEnv.TryGetOwnStruct(structDecl.Name, out _))
 				{
-					throw new Exception(
-						$"Struct '{structDecl.Name}' is already defined in group '{groupName}'."
-					);
+					throw new Exception($"Struct '{structDecl.Name}' is already defined in group '{groupName}'.");
 				}
 
 				moduleEnv.DefineStruct(structDecl.Name, structDecl);
