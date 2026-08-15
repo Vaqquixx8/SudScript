@@ -2,6 +2,7 @@ namespace SudScript;
 
 using System.Threading;
 using System.Diagnostics;
+
 public class Interpreter
 {
 	Environment environment = new Environment();
@@ -171,13 +172,20 @@ public class Interpreter
 
 		    return new NumberValue(MathF.Min(a, b));
 		};
-
 		builtins["max"] = args =>
 		{
 		    float a = float.Parse(ToText(args[0]));
 		    float b = float.Parse(ToText(args[1]));
 
 		    return new NumberValue(MathF.Max(a, b));
+		};
+		builtins["clamp"] = args =>
+		{
+		    float a = float.Parse(ToText(args[0]));
+		    float b = float.Parse(ToText(args[1]));
+		    float c = float.Parse(ToText(args[2]));
+
+		    return new NumberValue(Math.Clamp(a, b, c));
 		};
 		builtins["wait"] = args =>
 		{
@@ -634,30 +642,53 @@ public class Interpreter
 
 			case AssignmentExpression assignment:
 			{
-				Value value = EvaluateExpression(assignment.Value);
+			    Value value;
 
-				switch (assignment.Target)
-				{
-					case IdentifierExpression id:
-						environment.AssignVariable(id.Name, value);
-						return value;
+			    if (assignment.Operator == TokenType.Equals)
+			    {
+			        value = EvaluateExpression(assignment.Value);
+			    }
+			    else
+			    {
+			        Value currentValue = EvaluateExpression(assignment.Target);
+			        Value rightValue = EvaluateExpression(assignment.Value);
 
-					case MemberAccessExpression member:
-					{
-						Value target = EvaluateExpression(member.Target);
+			        TokenType binaryOperator = assignment.Operator switch
+			        {
+			            TokenType.PlusEquals => TokenType.Plus,
+			            TokenType.MinusEquals => TokenType.Minus,
+			            TokenType.TimesEquals => TokenType.Star,
+			            TokenType.DivideEquals => TokenType.Slash,
 
-						if (target is StructInstanceValue instance)
-						{
-							instance.Fields[member.Member] = value;
-							return value;
-						}
+			            _ => throw new Exception($"Unknown assignment operator {assignment.Operator}.")
+			        };
 
-						throw new Exception($"{target.GetType().Name} does not support member assignment.");
-					}
+			        value = EvaluateBinary(currentValue, binaryOperator, rightValue);
+			    }
 
-					default:
-						throw new Exception("Invalid assignment target.");
-				}
+			    switch (assignment.Target)
+			    {
+			        case IdentifierExpression id:
+			            environment.AssignVariable(id.Name, value);
+			            return value;
+
+			        case MemberAccessExpression member:
+			        {
+			            Value target = EvaluateExpression(member.Target);
+
+			            if (target is StructInstanceValue instance)
+			            {
+			                instance.Fields[member.Member] = value;
+			                return value;
+			            }
+
+			            throw new Exception(
+			                $"{target.GetType().Name} does not support member assignment.");
+			        }
+
+			        default:
+			            throw new Exception("Invalid assignment target.");
+			    }
 			}
 
 			case FunctionCallExpression call:
@@ -694,6 +725,43 @@ public class Interpreter
 					StructInstanceValue instance when instance.Fields.TryGetValue(member.Member, out var val) => val,
 					_ => throw new Exception($"{target.GetType().Name} has no member '{member.Member}'.")
 				};
+			}
+
+			case PostfixExpression postfix:
+			{
+				Value oldValue = EvaluateExpression(postfix.Target);
+
+				if(oldValue is not NumberValue number)
+				{
+					throw new Exception($"Operator {postfix.Operator} reqquires a number.");
+				}
+				float newValue = postfix.Operator switch
+				{
+					TokenType.Increment => number.Value + 1,
+					TokenType.Decrement => number.Value - 1,
+
+					_ => throw new Exception($"Unknown postfix operator {postfix.Operator}.")
+				};
+				Value result = new NumberValue(newValue);
+				switch(postfix.Target)
+				{
+					case IdentifierExpression id:
+						environment.AssignVariable(id.Name, result);
+						break;
+					case MemberAccessExpression member:
+					{
+						Value target = EvaluateExpression(member.Target);
+						if(target is StructInstanceValue instance)
+						{
+							instance.Fields[member.Member] = result;
+							break;
+						}
+						throw new Exception($"{target.GetType().Name} does not support member assignment.");
+					}
+					default:
+						throw new Exception("Invalid increment/decrement target.");
+				}
+				return oldValue;
 			}
 
 			default:

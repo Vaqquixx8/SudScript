@@ -271,21 +271,29 @@ public class Parser(List<Token> _tokens)
 
 	Expression ParseAssignment()
 	{
-		Expression left = ParseLogicalOr();
+	    Expression left = ParseLogicalOr();
 
-		if (Match(TokenType.Equals))
-		{
-			Expression value = ParseAssignment();
+	    if (Current.type == TokenType.Equals ||
+	        Current.type == TokenType.PlusEquals ||
+	        Current.type == TokenType.MinusEquals ||
+	        Current.type == TokenType.TimesEquals ||
+	        Current.type == TokenType.DivideEquals)
+	    {
+	        TokenType op = Consume().type;
 
-			return left switch
-			{
-				IdentifierExpression id => new AssignmentExpression(id, value),
-				MemberAccessExpression member => new AssignmentExpression(member, value),
-				_ => throw new Exception("Invalid assignment target.")
-			};
-		}
+	        Expression value = ParseAssignment();
 
-		return left;
+	        return left switch
+	        {
+	            IdentifierExpression id => new AssignmentExpression(id, value, op),
+
+	            MemberAccessExpression member => new AssignmentExpression(member, value, op),
+
+	            _ => throw new Exception("Invalid assignment target.")
+	        };
+	    }
+
+	    return left;
 	}
 
 	Expression ParseLogicalOr()
@@ -468,33 +476,49 @@ public class Parser(List<Token> _tokens)
 	{
 		Expression expr = ParsePrimaryCore();
 
-		while (Match(TokenType.Colon))
+		while(true)
 		{
-			Token member = Expect(TokenType.Identifier);
-
-			if(Current.type == TokenType.LeftParen)
+			while (Match(TokenType.Colon))
 			{
-				Consume();
+				Token member = Expect(TokenType.Identifier);
 
-				List<Expression> args = new List<Expression>();
-
-				if (Current.type != TokenType.RightParen)
+				if(Current.type == TokenType.LeftParen)
 				{
-					do
+					Consume();
+
+					List<Expression> args = new List<Expression>();
+
+					if (Current.type != TokenType.RightParen)
 					{
-						args.Add(ParseExpression());
-					} while (Match(TokenType.Comma));
+						do
+						{
+							args.Add(ParseExpression());
+						} while (Match(TokenType.Comma));
+					}
+					Expect(TokenType.RightParen);
+
+					expr = new MethodCallExpression(expr, member.value, args);
 				}
-				Expect(TokenType.RightParen);
-
-				expr = new MethodCallExpression(expr, member.value, args);
+				else
+				{
+					expr = new MemberAccessExpression(expr, member.value);
+				}
+				continue;
 			}
-			else
+
+			if(Current.type == TokenType.Increment || Current.type == TokenType.Decrement)
 			{
-				expr = new MemberAccessExpression(expr, member.value);
+				TokenType op = Consume().type;
+				if(expr is not IdentifierExpression && expr is not MemberAccessExpression)
+				{
+					throw new Exception("Increment/decrement target must be assignable.");
+				}
+				expr = new PostfixExpression(expr, op);
+				continue;
 			}
-
+			break;
 		}
+
 		return expr;
 	}
 

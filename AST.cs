@@ -42,8 +42,8 @@ public record ExpressionStatement(Expression Expression) : Statement;
 public record VariableDeclaration(string Name, Expression Value) : Statement;
 
 public record FunctionDeclaration(
-	string Name, 
-	List<string> Params, 
+	string Name,
+	List<string> Params,
 	BlockStatement Block,
 	bool IsShared
 ) : Statement;
@@ -106,7 +106,8 @@ public record ListExpression(List<Expression> Elements) : Expression;
 
 public record AssignmentExpression(
 	Expression Target,
-	Expression Value
+	Expression Value,
+	TokenType Operator = TokenType.Equals
 ) : Expression;
 
 public record BinaryExpression(
@@ -118,6 +119,11 @@ public record BinaryExpression(
 public record UnaryExpression(
 	Expression Right,
 	TokenType Op
+) : Expression;
+
+public record PostfixExpression(
+	Expression Target,
+	TokenType Operator
 ) : Expression;
 
 public record FunctionCallExpression(

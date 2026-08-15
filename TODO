@@ -74,8 +74,8 @@ Control Flow Improvements
     [ ] break <loopName>
     [ ] continue <loopName>
 [ ] Misc
-	[ ] /=/*=/+=/-= operator
-	[ ] ++/-- operator
+	[x] /=/*=/+=/-= operator
+	[x] ++/-- operator
 	[ ] Block Comments
 	/* This
 	is all a

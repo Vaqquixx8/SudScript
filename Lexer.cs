@@ -4,10 +4,14 @@ public enum TokenType
 	Identifier,
 	NumericLiteral, BooleanLiteral, StringLiteral,
 
-	Plus, Minus, 
+	Plus, Minus,
 	Star, Slash, Modulo,
 	Carat,
 	Exclamation,
+
+	Increment, Decrement,
+	PlusEquals, MinusEquals,
+	DivideEquals, TimesEquals,
 
 	Let, If, Else, While, Break, Continue,
 	Equals,
@@ -188,16 +192,50 @@ public class Lexer(string _source)
 			switch (Current)
 			{
 				case '+':
+					if(Peek() == '=')
+					{
+						tokens.Add(new Token(TokenType.PlusEquals, "+=", line, column));
+						Advance();
+						Advance();
+						break;
+					}
+					if(Peek() == '+')
+					{
+						tokens.Add(new Token(TokenType.Increment, "++", line, column));
+						Advance();
+						Advance();
+						break;
+					}
 					tokens.Add(new Token(TokenType.Plus, "+", line, column));
 					Advance();
 					break;
-
 				case '-':
+					if(Peek() == '=')
+					{
+						tokens.Add(new Token(TokenType.MinusEquals, "-=", line, column));
+						Advance();
+						Advance();
+						break;
+					}
+					if(Peek() == '-')
+					{
+						tokens.Add(new Token(TokenType.Decrement, "--", line, column));
+						Advance();
+						Advance();
+						break;
+					}
 					tokens.Add(new Token(TokenType.Minus, "-", line, column));
 					Advance();
 					break;
 
 				case '*':
+					if(Peek() == '=')
+					{
+						tokens.Add(new Token(TokenType.TimesEquals, "*=", line, column));
+						Advance();
+						Advance();
+						break;
+					}
 					tokens.Add(new Token(TokenType.Star, "*", line, column));
 					Advance();
 					break;
@@ -209,6 +247,13 @@ public class Lexer(string _source)
 						{
 							Advance();
 						}
+						break;
+					}
+					if(Peek() == '=')
+					{
+						tokens.Add(new Token(TokenType.DivideEquals, "/=", line, column));
+						Advance();
+						Advance();
 						break;
 					}
 					tokens.Add(new Token(TokenType.Slash, "/", line, column));
