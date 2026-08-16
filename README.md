@@ -21,6 +21,13 @@ cd {project_directory}
 sud run
 ```
 
+Build current Project
+(Creates a ./build folder and generates an imbedded C# project, and then builds that into a standalone application)
+```bash
+cd {project_directory}
+sud Build
+```
+
 Uninstall SudScript
 ```bash
 dotnet tool uninstall --global sudscript
