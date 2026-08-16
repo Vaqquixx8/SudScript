@@ -22,10 +22,10 @@ sud run
 ```
 
 Build current Project
-(Creates a ./build folder and generates an imbedded C# project, and then builds that into a standalone application)
+(Creates a ./build folder and generates an embedded C# project, and then builds that into a standalone application)
 ```bash
 cd {project_directory}
-sud Build
+sud build
 ```
 
 Uninstall SudScript
