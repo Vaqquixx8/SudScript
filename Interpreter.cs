@@ -733,7 +733,7 @@ public class Interpreter
 
 				if(oldValue is not NumberValue number)
 				{
-					throw new Exception($"Operator {postfix.Operator} reqquires a number.");
+					throw new Exception($"Operator {postfix.Operator} requires a number.");
 				}
 				float newValue = postfix.Operator switch
 				{

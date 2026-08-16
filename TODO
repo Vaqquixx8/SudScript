@@ -77,14 +77,18 @@ Control Flow Improvements
 	[x] /=/*=/+=/-= operator
 	[x] ++/-- operator
 	[ ] Block Comments
-	/* This
-	is all a
-	single
-	comment */
+		/* This
+		is all a
+		single
+		comment */
 [ ] Empty variable declarations "let myVar" <- default null value
 
 Endgame Shit
 ------------
+[x] Add project building
+	[x] "sud build" CLI Command
+		[x] Add the Command
+		[x] Make the Command actually do something
 [ ] Rewrite in Odin
 	[ ] Initial Rewrite
 	[ ] New CLI
