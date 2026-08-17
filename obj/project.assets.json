@@ -1,11 +1,121 @@
 {
   "version": 3,
   "targets": {
-    "net9.0": {}
+    "net9.0": {
+      "SDL3-CS/3.4.10.5": {
+        "type": "package",
+        "compile": {
+          "lib/net9.0/SDL3-CS.dll": {
+            "related": ".xml"
+          }
+        },
+        "runtime": {
+          "lib/net9.0/SDL3-CS.dll": {
+            "related": ".xml"
+          }
+        }
+      },
+      "SDL3-CS.Native/3.4.2": {
+        "type": "package",
+        "compile": {
+          "lib/net9.0/SDL3-CS.Native.dll": {
+            "related": ".xml"
+          }
+        },
+        "runtime": {
+          "lib/net9.0/SDL3-CS.Native.dll": {
+            "related": ".xml"
+          }
+        },
+        "runtimeTargets": {
+          "runtimes/linux-arm64/native/libSDL3.so": {
+            "assetType": "native",
+            "rid": "linux-arm64"
+          },
+          "runtimes/linux-x64/native/libSDL3.so": {
+            "assetType": "native",
+            "rid": "linux-x64"
+          },
+          "runtimes/osx-arm64/native/libSDL3.dylib": {
+            "assetType": "native",
+            "rid": "osx-arm64"
+          },
+          "runtimes/osx-x64/native/libSDL3.dylib": {
+            "assetType": "native",
+            "rid": "osx-x64"
+          },
+          "runtimes/win-arm64/native/SDL3.dll": {
+            "assetType": "native",
+            "rid": "win-arm64"
+          },
+          "runtimes/win-x64/native/SDL3.dll": {
+            "assetType": "native",
+            "rid": "win-x64"
+          }
+        }
+      }
+    }
   },
-  "libraries": {},
+  "libraries": {
+    "SDL3-CS/3.4.10.5": {
+      "sha512": "85f//lN/cz/uGfkhVZSbN4AMUhJkW/39Zhd7e6fs5e+2zCGDwPOTZgDdymiyPvkJnDdy6LTI9M/4Ke1ms11naA==",
+      "type": "package",
+      "path": "sdl3-cs/3.4.10.5",
+      "files": [
+        ".nupkg.metadata",
+        ".signature.p7s",
+        "CODE_OF_CONDUCT.md",
+        "LICENSE",
+        "README-nuget.md",
+        "README.md",
+        "SDL3-CS.xml",
+        "lib/net10.0/SDL3-CS.dll",
+        "lib/net10.0/SDL3-CS.xml",
+        "lib/net7.0/SDL3-CS.dll",
+        "lib/net7.0/SDL3-CS.xml",
+        "lib/net8.0/SDL3-CS.dll",
+        "lib/net8.0/SDL3-CS.xml",
+        "lib/net9.0/SDL3-CS.dll",
+        "lib/net9.0/SDL3-CS.xml",
+        "logo.png",
+        "sdl3-cs.3.4.10.5.nupkg.sha512",
+        "sdl3-cs.nuspec"
+      ]
+    },
+    "SDL3-CS.Native/3.4.2": {
+      "sha512": "Auef0/QUXRNqJYK45/8DNwTNPyxaG4R1s0zjjvyU3lKRi9hj+E6ygQ0Iw9Fj9Qw1eystK6puhtSkLhkJUH/V3w==",
+      "type": "package",
+      "path": "sdl3-cs.native/3.4.2",
+      "files": [
+        ".nupkg.metadata",
+        ".signature.p7s",
+        "LICENSE",
+        "README.md",
+        "lib/net10.0/SDL3-CS.Native.dll",
+        "lib/net10.0/SDL3-CS.Native.xml",
+        "lib/net7.0/SDL3-CS.Native.dll",
+        "lib/net7.0/SDL3-CS.Native.xml",
+        "lib/net8.0/SDL3-CS.Native.dll",
+        "lib/net8.0/SDL3-CS.Native.xml",
+        "lib/net9.0/SDL3-CS.Native.dll",
+        "lib/net9.0/SDL3-CS.Native.xml",
+        "logo.png",
+        "runtimes/linux-arm64/native/libSDL3.so",
+        "runtimes/linux-x64/native/libSDL3.so",
+        "runtimes/osx-arm64/native/libSDL3.dylib",
+        "runtimes/osx-x64/native/libSDL3.dylib",
+        "runtimes/win-arm64/native/SDL3.dll",
+        "runtimes/win-x64/native/SDL3.dll",
+        "sdl3-cs.native.3.4.2.nupkg.sha512",
+        "sdl3-cs.native.nuspec"
+      ]
+    }
+  },
   "projectFileDependencyGroups": {
-    "net9.0": []
+    "net9.0": [
+      "SDL3-CS >= 3.4.10.5",
+      "SDL3-CS.Native >= 3.4.2"
+    ]
   },
   "packageFolders": {
     "/home/josh/.nuget/packages/": {}
@@ -49,6 +159,16 @@
     "frameworks": {
       "net9.0": {
         "targetAlias": "net9.0",
+        "dependencies": {
+          "SDL3-CS": {
+            "target": "Package",
+            "version": "[3.4.10.5, )"
+          },
+          "SDL3-CS.Native": {
+            "target": "Package",
+            "version": "[3.4.2, )"
+          }
+        },
         "imports": [
           "net461",
           "net462",

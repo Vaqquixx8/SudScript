@@ -3,3 +3,11 @@
 /mnt/HardDrive/Projects/SudScript/bin/Release/net9.0/publish/SudScript.deps.json
 /mnt/HardDrive/Projects/SudScript/bin/Release/net9.0/publish/SudScript.runtimeconfig.json
 /mnt/HardDrive/Projects/SudScript/bin/Release/net9.0/publish/SudScript.pdb
+/mnt/HardDrive/Projects/SudScript/bin/Release/net9.0/publish/SDL3-CS.dll
+/mnt/HardDrive/Projects/SudScript/bin/Release/net9.0/publish/SDL3-CS.Native.dll
+/mnt/HardDrive/Projects/SudScript/bin/Release/net9.0/publish/runtimes/linux-arm64/native/libSDL3.so
+/mnt/HardDrive/Projects/SudScript/bin/Release/net9.0/publish/runtimes/linux-x64/native/libSDL3.so
+/mnt/HardDrive/Projects/SudScript/bin/Release/net9.0/publish/runtimes/osx-arm64/native/libSDL3.dylib
+/mnt/HardDrive/Projects/SudScript/bin/Release/net9.0/publish/runtimes/osx-x64/native/libSDL3.dylib
+/mnt/HardDrive/Projects/SudScript/bin/Release/net9.0/publish/runtimes/win-arm64/native/SDL3.dll
+/mnt/HardDrive/Projects/SudScript/bin/Release/net9.0/publish/runtimes/win-x64/native/SDL3.dll

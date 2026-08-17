@@ -1,8 +1,11 @@
 {
   "version": 2,
-  "dgSpecHash": "pM2KeLx3p0s=",
+  "dgSpecHash": "kt9X76jr3yM=",
   "success": true,
   "projectFilePath": "/mnt/HardDrive/Projects/SudScript/SudScript.csproj",
-  "expectedPackageFiles": [],
+  "expectedPackageFiles": [
+    "/home/josh/.nuget/packages/sdl3-cs/3.4.10.5/sdl3-cs.3.4.10.5.nupkg.sha512",
+    "/home/josh/.nuget/packages/sdl3-cs.native/3.4.2/sdl3-cs.native.3.4.2.nupkg.sha512"
+  ],
   "logs": []
 }

@@ -15,6 +15,7 @@ public class Program
 			Console.WriteLine("Commands:");
 			Console.WriteLine("  new <name>   Create a new Sud project");
 			Console.WriteLine("  run     Run the current Sud project");
+			Console.WriteLine("  build     Build the current Sud project");
 			return;
 		}
 
@@ -172,7 +173,7 @@ func main()
 	    string genDir = Path.Combine(buildDir, "gen");
 	    Directory.CreateDirectory(genDir);
 
-	    // 1. Collect all .sud files that must be embedded.
+	    // Collect all .sud files that must be embedded.
 	    var embeddedFiles = new Dictionary<string, string>();
 
 	    string entryRelative = Path.GetRelativePath(projectRoot, entryPath)
@@ -190,7 +191,7 @@ func main()
 	        }
 	    }
 
-	    // 2. Generate the host Program.cs.
+	    // Generate the host Program.cs.
 	    var sb = new StringBuilder();
 	    sb.AppendLine("using System;");
 	    sb.AppendLine("using System.Collections.Generic;");
@@ -254,7 +255,7 @@ func main()
 
 	    File.WriteAllText(Path.Combine(genDir, "Program.cs"), sb.ToString());
 
-	    // 3. Generate a .csproj that references the SudScript runtime assembly.
+	    // Generate a .csproj that references the SudScript runtime assembly.
 	    string runtimeAssemblyPath = typeof(Interpreter).Assembly.Location;
 
 	    // If the assembly is loaded from a single-file bundle, Location may be empty.

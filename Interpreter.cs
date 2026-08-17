@@ -1,10 +1,25 @@
 namespace SudScript;
+using SDL3;
 
 using System.Threading;
 using System.Diagnostics;
+using System.Runtime.InteropServices;
 
 public class Interpreter
 {
+	nint graphicsWindow = nint.Zero;
+	nint graphicsRenderer = nint.Zero;
+	nint graphicsTexture = nint.Zero;
+
+	int graphicsWindowWidth;
+	int graphicsWindowHeight;
+
+	int graphicsRenderWidth;
+	int graphicsRenderHeight;
+
+	bool graphicsInitialized = false;
+	bool graphicsRunning = false;
+
 	Environment environment = new Environment();
 	ProgramNode? program;
 	string modulesDirectory = null!;
@@ -22,7 +37,7 @@ public class Interpreter
 		program = _program;
 		environment = new Environment();
 		stopwatch = Stopwatch.StartNew();
-		InitializeBuiltins();
+		//InitializeBuiltins();
 
 		string baseDir;
 		if (modulesDirectory == null)
@@ -90,118 +105,6 @@ public class Interpreter
 				environment.DefineVariable(variable.Name, EvaluateExpression(variable.Value));
 			}
 		}
-	}
-
-	void InitializeBuiltins()
-	{
-		Random random = new Random();
-
-		builtins["random"] = args =>
-		{
-			int min = (int)((NumberValue)args[0]).Value;
-			int max = (int)((NumberValue)args[1]).Value;
-
-			return new NumberValue(random.Next(min, max + 1));
-		};
-		builtins["consoleSay"] = args =>
-		{
-			foreach(Value value in args)
-			{
-				Console.Write(ToText(value));
-			}
-			Console.Write('\n');
-			return new VoidValue();
-		};
-		builtins["consoleClear"] = args =>
-		{
-			Console.Clear();
-			return new VoidValue();
-		};
-		builtins["stringToNumber"] = args =>
-		{
-			return new NumberValue(float.Parse(ToText(args[0])));
-		};
-		builtins["stringToBool"] = args =>
-		{
-			return new BooleanValue(bool.Parse(ToText(args[0])));
-		};
-		builtins["toString"] = args =>
-		{
-			return new StringValue(ToText(args[0]));
-		};
-		builtins["sqrt"] = args =>
-		{
-			return new NumberValue(MathF.Sqrt(float.Parse(ToText(args[0]))));
-		};
-		builtins["sin"] = args =>
-		{
-			return new NumberValue(MathF.Sin(float.Parse(ToText(args[0]))));
-		};
-		builtins["cos"] = args =>
-		{
-			return new NumberValue(MathF.Cos(float.Parse(ToText(args[0]))));
-		};
-		builtins["tan"] = args =>
-		{
-			return new NumberValue(MathF.Tan(float.Parse(ToText(args[0]))));
-		};
-		builtins["atan"] = args =>
-		{
-			return new NumberValue(MathF.Atan(float.Parse(ToText(args[0]))));
-		};
-		builtins["atan2"] = args =>
-		{
-			return new NumberValue(MathF.Atan2(float.Parse(ToText(args[0])), float.Parse(ToText(args[1]))));
-		};
-		builtins["floor"] = args =>
-		{
-			return new NumberValue(MathF.Floor(float.Parse(ToText(args[0]))));
-		};
-		builtins["ceil"] = args =>
-		{
-			return new NumberValue(MathF.Ceiling(float.Parse(ToText(args[0]))));
-		};
-		builtins["round"] = args =>
-		{
-			return new NumberValue(MathF.Round(float.Parse(ToText(args[0]))));
-		};
-		builtins["min"] = args =>
-		{
-		    float a = float.Parse(ToText(args[0]));
-		    float b = float.Parse(ToText(args[1]));
-
-		    return new NumberValue(MathF.Min(a, b));
-		};
-		builtins["max"] = args =>
-		{
-		    float a = float.Parse(ToText(args[0]));
-		    float b = float.Parse(ToText(args[1]));
-
-		    return new NumberValue(MathF.Max(a, b));
-		};
-		builtins["clamp"] = args =>
-		{
-		    float a = float.Parse(ToText(args[0]));
-		    float b = float.Parse(ToText(args[1]));
-		    float c = float.Parse(ToText(args[2]));
-
-		    return new NumberValue(Math.Clamp(a, b, c));
-		};
-		builtins["wait"] = args =>
-		{
-		    float seconds = float.Parse(ToText(args[0]));
-
-		    if (seconds > 0)
-			{
-				Thread.Sleep((int)(seconds * 1000));
-			}
-
-		    return new VoidValue();
-		};
-		builtins["time"] = args =>
-		{
-		    return new NumberValue((float)stopwatch.Elapsed.TotalSeconds);
-		};
 	}
 
 	public void Execute()
@@ -417,20 +320,17 @@ public class Interpreter
 				int index = (int)((NumberValue)args[0]).Value;
 				return list.Values[index];
 			}
-
 			case "set":
 			{
 				int index = (int)((NumberValue)args[0]).Value;
 				list.Values[index] = args[1];
 				return args[1];
 			}
-
 			case "add":
 			{
 				list.Values.Add(args[0]);
 				return new VoidValue();
 			}
-
 			case "remove":
 			{
 				int index = (int)((NumberValue)args[0]).Value;
@@ -438,17 +338,14 @@ public class Interpreter
 				list.Values.RemoveAt(index);
 				return removed;
 			}
-
 			case "length":
 			{
 				return new NumberValue(list.Values.Count);
 			}
-
 			case "contains":
 			{
 				return new BooleanValue(list.Values.Any(v => AreEqual(v, args[0])));
 			}
-
 			case "fill":
 			{
 				int size = list.Values.Count;
@@ -472,11 +369,22 @@ public class Interpreter
 				}
 				return new VoidValue();
 			}
-
 			case "clear":
 			{
 				list.Values.Clear();
 				return new VoidValue();
+			}
+			case "first":
+			{
+			    for (int i = 0; i < list.Values.Count; i++)
+			    {
+			        if (AreEqual(list.Values[i], args[0]))
+			        {
+			            return new NumberValue(i);
+			        }
+			    }
+
+			    return new NumberValue(-1);
 			}
 
 			default:

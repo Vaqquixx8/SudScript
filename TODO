@@ -50,11 +50,13 @@ Member Access / Structs
                 (with 'a:b:c' - 'need a:b' imports 'a:b', 'a:b:c')
                 [x] Allow Circular need statements
 
-[ ] Standard Library Modules (Separate from built-in functions, eg. list[] :add(), :remove() etc.)
+[ ] Standard Library Modules (Separate from built-in functions, eg. list[] :add(), :remove() etc.) --------------------------- <- THIS ONE NEXT!!!
     [ ] Add Sud:Debug
         [ ] Move say() into Sud:Debug
     [ ] Add Sud:Math
     	[ ] Move all current Math Functions into Sud:Math
+    [ ] Add Sud:Graphics
+    	[ ] Move all current Graphics Functions into Sud:Graphics
 
 Allow Sud Projects
 ------------------
@@ -89,7 +91,7 @@ Endgame Shit
 	[x] "sud build" CLI Command
 		[x] Add the Command
 		[x] Make the Command actually do something
-[ ] Rewrite in Odin
+[ ] Rewrite in Another Language
 	[ ] Initial Rewrite
 	[ ] New CLI
 [ ] Bootstrap
