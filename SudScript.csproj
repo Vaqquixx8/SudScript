@@ -11,17 +11,10 @@
     <PackAsTool>true</PackAsTool>
     <ToolCommandName>sud</ToolCommandName>
     <PackageOutputPath>./nupkg</PackageOutputPath>
-    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
 
     <PackageId>sudscript</PackageId>
     <Version>0.0.3.8</Version>
     <Description>SudScript programming language CLI</Description>
   </PropertyGroup>
-
-  <ItemGroup>
-    <PackageReference Include="SDL3-CS" Version="3.4.10.5" />
-    <PackageReference Include="SDL3-CS.Native" Version="3.4.2" />
-  </ItemGroup>
-
 
 </Project>
