@@ -43,16 +43,6 @@
       "frameworks": {
         "net9.0": {
           "targetAlias": "net9.0",
-          "dependencies": {
-            "SDL3-CS": {
-              "target": "Package",
-              "version": "[3.4.10.5, )"
-            },
-            "SDL3-CS.Native": {
-              "target": "Package",
-              "version": "[3.4.2, )"
-            }
-          },
           "imports": [
             "net461",
             "net462",

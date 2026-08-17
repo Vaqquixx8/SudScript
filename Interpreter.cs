@@ -1,5 +1,4 @@
 namespace SudScript;
-using SDL3;
 
 using System.Threading;
 using System.Diagnostics;
@@ -7,25 +6,12 @@ using System.Runtime.InteropServices;
 
 public class Interpreter
 {
-	nint graphicsWindow = nint.Zero;
-	nint graphicsRenderer = nint.Zero;
-	nint graphicsTexture = nint.Zero;
-
-	int graphicsWindowWidth;
-	int graphicsWindowHeight;
-
-	int graphicsRenderWidth;
-	int graphicsRenderHeight;
-
-	bool graphicsInitialized = false;
-	bool graphicsRunning = false;
-
 	Environment environment = new Environment();
 	ProgramNode? program;
 	string modulesDirectory = null!;
 	readonly Dictionary<string, Func<List<Value>, Value>> builtins = new Dictionary<string, Func<List<Value>, Value>>();
 
-	Stopwatch stopwatch = new Stopwatch();
+	//Stopwatch stopwatch = new Stopwatch();
 
 	public void SetModulesDirectory(string path)
 	{
@@ -36,7 +22,7 @@ public class Interpreter
 	{
 		program = _program;
 		environment = new Environment();
-		stopwatch = Stopwatch.StartNew();
+		//stopwatch = Stopwatch.StartNew();
 		//InitializeBuiltins();
 
 		string baseDir;
