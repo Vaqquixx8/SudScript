@@ -11,8 +11,6 @@ public class Interpreter
 	string modulesDirectory = null!;
 	readonly Dictionary<string, Func<List<Value>, Value>> builtins = new Dictionary<string, Func<List<Value>, Value>>();
 
-	//Stopwatch stopwatch = new Stopwatch();
-
 	public void SetModulesDirectory(string path)
 	{
 		modulesDirectory = path;
@@ -22,8 +20,6 @@ public class Interpreter
 	{
 		program = _program;
 		environment = new Environment();
-		//stopwatch = Stopwatch.StartNew();
-		//InitializeBuiltins();
 
 		string baseDir;
 		if (modulesDirectory == null)
@@ -362,7 +358,7 @@ public class Interpreter
 			}
 			case "first":
 			{
-			    for (int i = 0; i < list.Values.Count; i++)
+			    for (int i = 0; i < list.Values.Count; ++i)
 			    {
 			        if (AreEqual(list.Values[i], args[0]))
 			        {

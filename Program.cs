@@ -110,10 +110,9 @@ modules = ""src/Modules""
 
 
 		string mainScript =
-@"
-func main()
+@"func main()
 {
-	consoleSay(""Hello World!"")
+	let helloWorld = ""Hello World!""
 }
 ";
 
