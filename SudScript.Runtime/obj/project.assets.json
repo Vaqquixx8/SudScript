@@ -1,0 +1,95 @@
+{
+  "version": 3,
+  "targets": {
+    "net9.0": {
+      "SudScript.Library/1.0.0": {
+        "type": "project",
+        "framework": ".NETCoreApp,Version=v9.0",
+        "compile": {
+          "bin/placeholder/SudScript.Library.dll": {}
+        },
+        "runtime": {
+          "bin/placeholder/SudScript.Library.dll": {}
+        }
+      }
+    }
+  },
+  "libraries": {
+    "SudScript.Library/1.0.0": {
+      "type": "project",
+      "path": "../SudScript.Library/SudScript.Library.csproj",
+      "msbuildProject": "../SudScript.Library/SudScript.Library.csproj"
+    }
+  },
+  "projectFileDependencyGroups": {
+    "net9.0": [
+      "SudScript.Library >= 1.0.0"
+    ]
+  },
+  "packageFolders": {
+    "/home/josh/.nuget/packages/": {}
+  },
+  "project": {
+    "version": "0.0.3.8",
+    "restore": {
+      "projectUniqueName": "/mnt/HardDrive/Projects/SudScript/SudScript.Runtime/SudScript.Runtime.csproj",
+      "projectName": "sudscript",
+      "projectPath": "/mnt/HardDrive/Projects/SudScript/SudScript.Runtime/SudScript.Runtime.csproj",
+      "packagesPath": "/home/josh/.nuget/packages/",
+      "outputPath": "/mnt/HardDrive/Projects/SudScript/SudScript.Runtime/obj/",
+      "projectStyle": "PackageReference",
+      "configFilePaths": [
+        "/home/josh/.nuget/NuGet/NuGet.Config"
+      ],
+      "originalTargetFrameworks": [
+        "net9.0"
+      ],
+      "sources": {
+        "https://api.nuget.org/v3/index.json": {}
+      },
+      "frameworks": {
+        "net9.0": {
+          "targetAlias": "net9.0",
+          "projectReferences": {
+            "/mnt/HardDrive/Projects/SudScript/SudScript.Library/SudScript.Library.csproj": {
+              "projectPath": "/mnt/HardDrive/Projects/SudScript/SudScript.Library/SudScript.Library.csproj"
+            }
+          }
+        }
+      },
+      "warningProperties": {
+        "warnAsError": [
+          "NU1605"
+        ]
+      },
+      "restoreAuditProperties": {
+        "enableAudit": "true",
+        "auditLevel": "low",
+        "auditMode": "direct"
+      },
+      "SdkAnalysisLevel": "9.0.300"
+    },
+    "frameworks": {
+      "net9.0": {
+        "targetAlias": "net9.0",
+        "imports": [
+          "net461",
+          "net462",
+          "net47",
+          "net471",
+          "net472",
+          "net48",
+          "net481"
+        ],
+        "assetTargetFallback": true,
+        "warn": true,
+        "frameworkReferences": {
+          "Microsoft.NETCore.App": {
+            "privateAssets": "all"
+          }
+        },
+        "runtimeIdentifierGraphPath": "/usr/share/dotnet/sdk/9.0.317/PortableRuntimeIdentifierGraph.json"
+      }
+    }
+  }
+}
