@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("SudScript.Library")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Release")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+206d371342f22d8b08dde1ac49bea4d5d0105b6f")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+cb79bfbd5102fe2ada887da72ed70a118bc90929")]
 [assembly: System.Reflection.AssemblyProductAttribute("SudScript.Library")]
 [assembly: System.Reflection.AssemblyTitleAttribute("SudScript.Library")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

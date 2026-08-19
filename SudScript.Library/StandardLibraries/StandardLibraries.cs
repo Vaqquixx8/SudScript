@@ -6,7 +6,8 @@ public static class StandardLibraries
 		new(StringComparer.Ordinal)
 		{
 			["Sud:IO"] = IOLibrary.Create,
-			["Sud:Time"] = TimerLibrary.Create
+			["Sud:Time"] = TimerLibrary.Create,
+			["Sud:Math"] = MathLibrary.Create,
 		};
 
 	public static bool Exists(string name)

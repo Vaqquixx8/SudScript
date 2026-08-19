@@ -20,12 +20,12 @@ public static class TimerLibrary
 					{
 						float seconds = float.Parse(Interpreter.ToText(args[0]));
 
-						if (seconds > 0)
+					    if (seconds > 0)
 						{
-							Thread.Sleep(TimeSpan.FromSeconds(seconds));
+							Thread.Sleep((int)(seconds * 1000));
 						}
 
-						return new VoidValue();
+					    return new VoidValue();
 					},
 					1),
 				new NativeFunctionDeclaration(
