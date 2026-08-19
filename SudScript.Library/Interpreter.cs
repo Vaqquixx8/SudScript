@@ -251,6 +251,13 @@ public class Interpreter
 
 		if(function is NativeFunctionDeclaration native)
 		{
+			if(native.ArgumentCount.HasValue && native.ArgumentCount.Value != args.Count)
+			{
+				throw new Exception(
+					$"Function '{call.Name}' expects " +
+					$"{native.ArgumentCount.Value} arguments, " +
+					$"but got {args.Count} instead.");
+			}
 			return native.Implementation(args);
 		}
 
@@ -406,6 +413,13 @@ public class Interpreter
 
 		if(function is NativeFunctionDeclaration native)
 		{
+			if(native.ArgumentCount.HasValue && native.ArgumentCount.Value != args.Count)
+			{
+				throw new Exception(
+					$"Method '{method}' expects " +
+					$"{native.ArgumentCount.Value} arguments, " +
+					$"but got {args.Count} instead.");
+			}
 			return native.Implementation(args);
 		}
 
@@ -459,6 +473,13 @@ public class Interpreter
 
 		if(function is NativeFunctionDeclaration native)
 		{
+			if(native.ArgumentCount.HasValue && native.ArgumentCount.Value != args.Count)
+			{
+				throw new Exception(
+					$"Method '{method}' expects " +
+					$"{native.ArgumentCount.Value} arguments, " +
+					$"but got {args.Count} instead.");
+			}
 			return native.Implementation(args);
 		}
 
@@ -530,6 +551,8 @@ public class Interpreter
 
 			case VoidExpression:
 				return new VoidValue();
+			case NullExpression:
+				return new NullValue();
 
 			case ListExpression list:
 			{
@@ -754,19 +777,26 @@ public class Interpreter
 		};
 	}
 
-	static bool AreEqual(Value left, Value Right)
+	static bool AreEqual(Value left, Value right)
 	{
-		return (left, Right) switch
+		return (left, right) switch
 		{
 			(NumberValue a, NumberValue b) => a.Value == b.Value,
 			(StringValue a, StringValue b) => a.Value == b.Value,
 			(BooleanValue a, BooleanValue b) => a.Value == b.Value,
+
+			(NullValue, NullValue) => true,
+			(VoidValue, VoidValue) => true,
+
 			(ListValue a, ListValue b) =>
 				a.Values.Count == b.Values.Count &&
 				a.Values.Zip(b.Values).All(pair => AreEqual(pair.First, pair.Second)),
+
 			(StructInstanceValue a, StructInstanceValue b) =>
 				a.TypeName == b.TypeName &&
-				a.Fields.Keys.All(k  => AreEqual(a.Fields[k], b.Fields[k])),
+				a.Fields.Count == b.Fields.Count &&
+				a.Fields.Keys.All(k => a.Fields.ContainsKey(k) && AreEqual(a.Fields[k], b.Fields[k])),
+
 			_ => false
 		};
 	}
@@ -778,6 +808,7 @@ public class Interpreter
 			NumberValue n => n.Value.ToString(System.Globalization.CultureInfo.InvariantCulture),
 			StringValue s => s.Value,
 			BooleanValue b => b.Value ? "true" : "false",
+			NullValue => "null",
 			VoidValue => "void",
 			ListValue list => "[" + string.Join(", ", list.Values.Select(ToText)) + "]",
 			StructInstanceValue sv => $"{sv.TypeName} {{ {string.Join(", ", sv.Fields.Select(kv => $"{kv.Key}: {ToText(kv.Value)}"))} }}",
@@ -790,8 +821,9 @@ public class Interpreter
 		return Value switch
 		{
 			BooleanValue b => b.Value,
-			NumberValue n => n.Value > 0f,
+			NumberValue n => n.Value != 0f,
 			StringValue s => !string.IsNullOrEmpty(s.Value),
+			NullValue => false,
 
 			_ => throw new Exception($"Cannot use {Value.GetType().Name} as a Condition.")
 		};

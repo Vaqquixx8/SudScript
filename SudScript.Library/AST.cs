@@ -21,6 +21,7 @@ public record StructInstanceValue(
 ) : Value;
 
 public record VoidValue() : Value;
+public record NullValue() : Value;
 
 // =======================================================
 // Misc
@@ -67,6 +68,7 @@ public record UserFunctionDeclaration(
 public record NativeFunctionDeclaration(
 	string Name,
 	Func<List<Value>, Value> Implementation,
+	int? ArgumentCount = null,
 	bool IsShared = false
 ) : FunctionDeclaration(Name, IsShared);
 
@@ -123,6 +125,7 @@ public record MemberAccessExpression(
 ) : Expression;
 
 public record VoidExpression() : Expression;
+public record NullExpression() : Expression;
 
 public record ListExpression(List<Expression> Elements) : Expression;
 

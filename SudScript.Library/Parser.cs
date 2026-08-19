@@ -546,6 +546,10 @@ public class Parser(List<Token> _tokens)
 			case TokenType.LeftBracket:
 				return ParseListLiteral();
 
+			case TokenType.NullLiteral:
+				Consume();
+				return new NullExpression();
+
 			case TokenType.Identifier:
 			{
 				Token nameToken = Consume();

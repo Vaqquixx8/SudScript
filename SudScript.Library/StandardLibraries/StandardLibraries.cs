@@ -5,7 +5,8 @@ public static class StandardLibraries
 	public static readonly Dictionary<string, Func<StructDeclaration>> All =
 		new(StringComparer.Ordinal)
 		{
-			["Sud:IO"] = IOLibrary.Create
+			["Sud:IO"] = IOLibrary.Create,
+			["Sud:Time"] = TimerLibrary.Create
 		};
 
 	public static bool Exists(string name)

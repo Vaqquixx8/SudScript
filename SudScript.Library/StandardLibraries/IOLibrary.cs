@@ -5,7 +5,7 @@ public static class IOLibrary
 	public static StructDeclaration Create()
 	{
 		return new StructDeclaration(
-			"IO",
+			"IOState",
 			new List<StructFieldDeclaration>(),
 			new List<FunctionDeclaration>
 			{
@@ -17,10 +17,8 @@ public static class IOLibrary
 						{
 							Console.Write(Interpreter.ToText(value));
 						}
-
 						return new VoidValue();
 					}),
-
 				new NativeFunctionDeclaration(
 					"consoleWriteLine",
 					args =>
@@ -29,27 +27,38 @@ public static class IOLibrary
 						{
 							Console.Write(Interpreter.ToText(value));
 						}
-
 						Console.WriteLine();
-
 						return new VoidValue();
 					}),
-
 				new NativeFunctionDeclaration(
 					"consoleClear",
 					args =>
 					{
 						Console.Clear();
 						return new VoidValue();
-					}),
-
+					},
+					0),
 				new NativeFunctionDeclaration(
 					"consoleShowCursor",
 					args =>
 					{
-						Console.CursorVisible = args[0];
+						Console.CursorVisible = bool.Parse(Interpreter.ToText(args[0]));
 						return new VoidValue();
-					})
+					},
+					1),
+				new NativeFunctionDeclaration(
+					"consoleReadKey",
+					args =>
+					{
+						if (!Console.KeyAvailable)
+						{
+							return new NullValue();
+						}
+
+						ConsoleKeyInfo key = Console.ReadKey(true);
+						return new StringValue(key.KeyChar.ToString());
+					},
+					0)
 			});
 	}
 }

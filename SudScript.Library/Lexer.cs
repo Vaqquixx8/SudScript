@@ -3,7 +3,7 @@ namespace SudScript;
 public enum TokenType
 {
 	Identifier,
-	NumericLiteral, BooleanLiteral, StringLiteral,
+	NumericLiteral, BooleanLiteral, StringLiteral, NullLiteral,
 
 	Plus, Minus,
 	Star, Slash, Modulo,
@@ -68,6 +68,7 @@ public class Lexer(string _source)
 		{"while", TokenType.While},
 		{"break", TokenType.Break},
 		{"else", TokenType.Else},
+		{"null", TokenType.NullLiteral},
 		{"true", TokenType.BooleanLiteral},
 		{"false", TokenType.BooleanLiteral},
 		{"func", TokenType.Func},
