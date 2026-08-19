@@ -1,0 +1,22 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd">
+  <metadata>
+    <id>sudscript</id>
+    <version>0.0.3.8</version>
+    <authors>SudScript.Runtime</authors>
+    <description>SudScript programming language CLI</description>
+    <packageTypes>
+      <packageType name="DotnetTool" />
+    </packageTypes>
+    <repository type="git" commit="e1fe14ae692e6ce5f81c9c240e6d55be654839e4" />
+  </metadata>
+  <files>
+    <file src="/mnt/HardDrive/Projects/SudScript/SudScript.Runtime/obj/Release/net9.0/DotnetToolSettings.xml" target="tools/net9.0/any/DotnetToolSettings.xml" />
+    <file src="/mnt/HardDrive/Projects/SudScript/SudScript.Runtime/bin/Release/net9.0/publish/SudScript.Runtime.dll" target="tools/net9.0/any/SudScript.Runtime.dll" />
+    <file src="/mnt/HardDrive/Projects/SudScript/SudScript.Runtime/bin/Release/net9.0/publish/SudScript.Runtime.deps.json" target="tools/net9.0/any/SudScript.Runtime.deps.json" />
+    <file src="/mnt/HardDrive/Projects/SudScript/SudScript.Runtime/bin/Release/net9.0/publish/SudScript.Runtime.runtimeconfig.json" target="tools/net9.0/any/SudScript.Runtime.runtimeconfig.json" />
+    <file src="/mnt/HardDrive/Projects/SudScript/SudScript.Runtime/bin/Release/net9.0/publish/SudScript.Runtime.pdb" target="tools/net9.0/any/SudScript.Runtime.pdb" />
+    <file src="/mnt/HardDrive/Projects/SudScript/SudScript.Runtime/bin/Release/net9.0/publish/SudScript.Library.dll" target="tools/net9.0/any/SudScript.Library.dll" />
+    <file src="/mnt/HardDrive/Projects/SudScript/SudScript.Runtime/bin/Release/net9.0/publish/SudScript.Library.pdb" target="tools/net9.0/any/SudScript.Library.pdb" />
+  </files>
+</package>

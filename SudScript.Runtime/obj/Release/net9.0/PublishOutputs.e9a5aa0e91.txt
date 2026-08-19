@@ -1,0 +1,7 @@
+/mnt/HardDrive/Projects/SudScript/SudScript.Runtime/bin/Release/net9.0/publish/SudScript.Runtime
+/mnt/HardDrive/Projects/SudScript/SudScript.Runtime/bin/Release/net9.0/publish/SudScript.Runtime.dll
+/mnt/HardDrive/Projects/SudScript/SudScript.Runtime/bin/Release/net9.0/publish/SudScript.Runtime.deps.json
+/mnt/HardDrive/Projects/SudScript/SudScript.Runtime/bin/Release/net9.0/publish/SudScript.Runtime.runtimeconfig.json
+/mnt/HardDrive/Projects/SudScript/SudScript.Runtime/bin/Release/net9.0/publish/SudScript.Runtime.pdb
+/mnt/HardDrive/Projects/SudScript/SudScript.Runtime/bin/Release/net9.0/publish/SudScript.Library.dll
+/mnt/HardDrive/Projects/SudScript/SudScript.Runtime/bin/Release/net9.0/publish/SudScript.Library.pdb
