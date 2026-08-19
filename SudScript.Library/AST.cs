@@ -33,6 +33,17 @@ public record StructDeclarationValue(
 	Dictionary<string, FunctionDeclaration> Methods
 );
 
+/*public record NativeFunctionDeclaration : FunctionDeclaration
+{
+	public Func<List<Value>, Value> Implementation {get;}
+	public string Name;
+	public NativeFunctionDeclaration(string name, Func<List<Value>, Value?> implementation)
+	{
+		Name = name;
+		Implementation = implementation;
+	}
+}*/
+
 // =======================================================
 // Statements
 // =======================================================
@@ -41,12 +52,23 @@ public record ExpressionStatement(Expression Expression) : Statement;
 
 public record VariableDeclaration(string Name, Expression Value) : Statement;
 
-public record FunctionDeclaration(
+public abstract record FunctionDeclaration(
+	string Name,
+	bool IsShared
+) : Statement;
+
+public record UserFunctionDeclaration(
 	string Name,
 	List<string> Params,
 	BlockStatement Block,
 	bool IsShared
-) : Statement;
+) : FunctionDeclaration(Name, IsShared);
+
+public record NativeFunctionDeclaration(
+	string Name,
+	Func<List<Value>, Value> Implementation,
+	bool IsShared = false
+) : FunctionDeclaration(Name, IsShared);
 
 public record StructDeclaration(
 	string Name,

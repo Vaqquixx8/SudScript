@@ -91,17 +91,22 @@ public class Interpreter
 
 	public void Execute()
 	{
-		if (program == null)
+		if(program == null)
 		{
 			throw new Exception("Interpreter has not been initialized.");
 		}
 
-		if (!environment.TryGetFunction("main", out var main))
+		if(!environment.TryGetFunction("main", out var main))
 		{
 			throw new Exception("Program entry point 'main' was not found.");
 		}
 
-		if (main.Params.Count != 0)
+		if(main is not UserFunctionDeclaration userMain)
+		{
+			throw new Exception("'main' must be a user-defined function.");
+		}
+
+		if(userMain.Params.Count != 0)
 		{
 			throw new Exception("'main' cannot have parameters.");
 		}
@@ -236,14 +241,30 @@ public class Interpreter
 			{
 				arguments.Add(EvaluateExpression(arg));
 			}
+
 			return builtin(arguments);
 		}
 
 		FunctionDeclaration function = environment.GetFunction(call.Name);
 
-		if (call.Args.Count != function.Params.Count)
+		List<Value> args = call.Args.Select(EvaluateExpression).ToList();
+
+		if(function is NativeFunctionDeclaration native)
 		{
-			throw new Exception($"Function '{call.Name}' expects {function.Params.Count} arguments, but got {call.Args.Count} instead.");
+			return native.Implementation(args);
+		}
+
+		if(function is not UserFunctionDeclaration userFunction)
+		{
+			throw new Exception($"Unknown function type '{function.GetType().Name}'.");
+		}
+
+		if(userFunction.Params.Count != args.Count)
+		{
+			throw new Exception(
+				$"Function '{call.Name}' expects " +
+				$"{userFunction.Params.Count} arguments, " +
+				$"but got {args.Count} instead.");
 		}
 
 		Environment previous = environment;
@@ -252,19 +273,17 @@ public class Interpreter
 
 		try
 		{
-			for (int i = 0; i < function.Params.Count; i++)
+			for(int i = 0; i < userFunction.Params.Count; ++i)
 			{
-				Value argument = EvaluateExpression(call.Args[i]);
-				environment.DefineVariable(function.Params[i], argument);
+				environment.DefineVariable(userFunction.Params[i], args[i]);
 			}
 
-			var result = ExecuteStatements(function.Block.Body);
+			var result = ExecuteStatements(userFunction.Block.Body);
 
-			if (result.Type == FlowType.Return)
+			if(result.Type == FlowType.Return)
 			{
 				return result.Value!;
 			}
-
 
 			return new VoidValue();
 		}
@@ -376,25 +395,46 @@ public class Interpreter
 
 	Value CallStructInstanceMethod(StructInstanceValue instance, string method, List<Value> args)
 	{
-		StructDeclaration decl = environment.GetStruct(instance.TypeName);
+		StructDeclaration decl =
+			environment.GetStruct(instance.TypeName);
 
-		FunctionDeclaration function = decl.Methods.FirstOrDefault(m => !m.IsShared && m.Name == method) ?? throw new Exception($"Struct '{instance.TypeName}' has no instance method {method}.");
+		FunctionDeclaration function =
+			decl.Methods.FirstOrDefault(
+				m => !m.IsShared && m.Name == method)
+			?? throw new Exception(
+				$"Struct '{instance.TypeName}' has no instance method '{method}'.");
 
-		if(function.Params.Count != args.Count)
+		if(function is NativeFunctionDeclaration native)
 		{
-			throw new Exception($"Method '{method}' expects {function.Params.Count} arguments but got {args.Count} instead.");
+			return native.Implementation(args);
 		}
+
+		if(function is not UserFunctionDeclaration userFunction)
+		{
+			throw new Exception($"Unknown function type '{function.GetType().Name}'.");
+		}
+
+		if(userFunction.Params.Count != args.Count)
+		{
+			throw new Exception(
+				$"Method '{method}' expects {userFunction.Params.Count} " +
+				$"arguments but got {args.Count} instead.");
+		}
+
 		Environment previous = environment;
+
 		environment = new Environment(environment);
 
 		try
 		{
 			environment.DefineVariable("self", instance);
-			for(int i = 0; i< function.Params.Count; ++i)
+
+			for(int i = 0; i < userFunction.Params.Count; ++i)
 			{
-				environment.DefineVariable(function.Params[i], args[i]);
+				environment.DefineVariable(userFunction.Params[i], args[i]);
 			}
-			var result = ExecuteStatements(function.Block.Body);
+
+			var result = ExecuteStatements(userFunction.Block.Body);
 
 			if(result.Type == FlowType.Return)
 			{
@@ -411,26 +451,43 @@ public class Interpreter
 
 	Value CallStructSharedMethod(StructDeclaration decl, string method, List<Value> args)
 	{
-		FunctionDeclaration function = decl.Methods.FirstOrDefault(m => m.IsShared && m.Name == method) ?? throw new Exception($"Struct '{decl.Name}' has no shared method '{method}'.");
+		FunctionDeclaration function =
+			decl.Methods.FirstOrDefault(
+				m => m.IsShared && m.Name == method)
+			?? throw new Exception(
+				$"Struct '{decl.Name}' has no shared method '{method}'.");
 
-		if (function.Params.Count != args.Count)
+		if(function is NativeFunctionDeclaration native)
 		{
-			throw new Exception($"Shared method '{method}' expects {function.Params.Count} arguments but got {args.Count} instead.");
+			return native.Implementation(args);
+		}
+
+		if(function is not UserFunctionDeclaration userFunction)
+		{
+			throw new Exception($"Unknown function type '{function.GetType().Name}'.");
+		}
+
+		if(userFunction.Params.Count != args.Count)
+		{
+			throw new Exception(
+				$"Shared method '{method}' expects {userFunction.Params.Count} " +
+				$"arguments but got {args.Count} instead.");
 		}
 
 		Environment previous = environment;
+
 		environment = new Environment(environment);
 
 		try
 		{
-			for (int i = 0; i < function.Params.Count; ++i)
+			for(int i = 0; i < userFunction.Params.Count; ++i)
 			{
-				environment.DefineVariable(function.Params[i], args[i]);
+				environment.DefineVariable(userFunction.Params[i], args[i]);
 			}
 
-			var result = ExecuteStatements(function.Block.Body);
+			var result = ExecuteStatements(userFunction.Block.Body);
 
-			if (result.Type == FlowType.Return)
+			if(result.Type == FlowType.Return)
 			{
 				return result.Value!;
 			}
@@ -714,7 +771,7 @@ public class Interpreter
 		};
 	}
 
-	static string ToText(Value Value)
+	public static string ToText(Value Value)
 	{
 		return Value switch
 		{
@@ -727,7 +784,6 @@ public class Interpreter
 			_ => Value.ToString() ?? ""
 		};
 	}
-
 
 	static bool IsTruthy(Value Value)
 	{

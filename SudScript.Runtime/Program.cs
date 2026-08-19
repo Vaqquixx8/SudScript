@@ -97,6 +97,13 @@ public class Program
 
 		Directory.CreateDirectory(srcDirectory);
 
+		// Create Modules Directory
+		string modulesDirectory = Path.Combine(
+			srcDirectory,
+			"Modules");
+
+		Directory.CreateDirectory(modulesDirectory);
+
 		// Create sud.manifest
 		string manifest =
 	@$"
@@ -109,18 +116,20 @@ modules = ""src/Modules""
 			Path.Combine(projectRoot, "sud.manifest"),
 			manifest.Trim());
 
-
 		string mainScript =
-@"func main()
+@"need Sud:IO
+
+let io = IO{}
+
+func main()
 {
-	let helloWorld = ""Hello World!""
+	io:consoleWriteLine(""Hello World!"")
 }
 ";
 
 		File.WriteAllText(
 			Path.Combine(srcDirectory, "Main.sud"),
 			mainScript);
-
 
 		Console.WriteLine($"Created Sud project '{projectName}'.");
 	}
@@ -153,7 +162,6 @@ modules = ""src/Modules""
 		throw new FileNotFoundException("Could not locate sud.manifest.");
 	}
 
-
 	static void BuildProject()
 	{
 	    string manifestPath = FindManifest(Directory.GetCurrentDirectory());
@@ -176,17 +184,14 @@ modules = ""src/Modules""
 	    // Collect all .sud files that must be embedded.
 	    var embeddedFiles = new Dictionary<string, string>();
 
-	    string entryRelative = Path.GetRelativePath(projectRoot, entryPath)
-	        .Replace('\\', '/');
+	    string entryRelative = Path.GetRelativePath(projectRoot, entryPath).Replace('\\', '/');
 	    embeddedFiles[entryRelative] = source;
 
 	    if (Directory.Exists(modulesPath))
 	    {
-	        foreach (string file in Directory.EnumerateFiles(
-	                     modulesPath, "*.sud", SearchOption.AllDirectories))
+	        foreach (string file in Directory.EnumerateFiles(modulesPath, "*.sud", SearchOption.AllDirectories))
 	        {
-	            string relative = Path.GetRelativePath(projectRoot, file)
-	                .Replace('\\', '/');
+	            string relative = Path.GetRelativePath(projectRoot, file).Replace('\\', '/');
 	            embeddedFiles[relative] = File.ReadAllText(file);
 	        }
 	    }

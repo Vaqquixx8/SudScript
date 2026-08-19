@@ -138,7 +138,7 @@ public class Parser(List<Token> _tokens)
 		return new BlockStatement(body);
 	}
 
-	FunctionDeclaration ParseFunctionDeclaration(bool isShared = false)
+	UserFunctionDeclaration ParseFunctionDeclaration(bool isShared = false)
 	{
 		Consume();
 
@@ -161,7 +161,7 @@ public class Parser(List<Token> _tokens)
 
 		BlockStatement body = ParseBlockStatement();
 
-		return new FunctionDeclaration(nameToken.value, parameters, body, isShared);
+		return new UserFunctionDeclaration(nameToken.value, parameters, body, isShared);
 	}
 
 	ReturnStatement ParseReturnStatement()

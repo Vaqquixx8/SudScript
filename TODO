@@ -27,6 +27,7 @@ Lists
     [x] :fill(thing) -> void
     [x] :clear() -> void
     [x] :contains(thing) -> bool
+    [x] :first(thing) -> number
 
 Member Access / Structs
 -----------------------

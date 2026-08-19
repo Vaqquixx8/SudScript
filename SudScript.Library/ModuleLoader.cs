@@ -12,6 +12,11 @@ public class ModuleLoader(string _baseDirectory)
 		groupIndex.Clear();
 		moduleEnvironments.Clear();
 
+		if(!Directory.Exists(baseDirectory))
+		{
+			return;
+		}
+
 		foreach(string filePath in Directory.EnumerateFiles(baseDirectory, "*.sud", SearchOption.AllDirectories))
 		{
 			string source = File.ReadAllText(filePath);
@@ -46,6 +51,11 @@ public class ModuleLoader(string _baseDirectory)
 	{
 		string groupName = string.Join(":", path);
 
+		if(StandardLibraries.Exists(groupName))
+		{
+			return [LoadStandardLibrary(groupName)];
+		}
+
 		var environments = new List<Environment>();
 
 		foreach(string filePath in FindGroups(groupName))
@@ -56,13 +66,21 @@ public class ModuleLoader(string _baseDirectory)
 		return environments;
 	}
 
+	Environment LoadStandardLibrary(string name)
+	{
+		Environment environment = new Environment();
+
+		StructDeclaration declaration = StandardLibraries.CreateStruct(name);
+
+		environment.DefineStruct(declaration.Name, declaration);
+		return environment;
+	}
+
 	IEnumerable<string> FindGroups(string groupName)
 	{
-		string prefix = groupName + ":";
-
 		return groupIndex
-			.Where(pair => pair.Key == groupName || pair.Key.StartsWith(prefix, StringComparison.Ordinal))
-			.OrderBy(pair => pair.Key)
+			.Where(pair => pair.Key.Equals(groupName, StringComparison.Ordinal) || pair.Key.StartsWith(groupName + ":", StringComparison.Ordinal))
+			.OrderBy(pair => pair.Key, StringComparer.Ordinal)
 			.SelectMany(pair => pair.Value);
 	}
 
