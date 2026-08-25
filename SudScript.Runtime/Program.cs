@@ -61,8 +61,8 @@ public class Program
 
 		Interpreter interpreter = new();
 
-		interpreter.SetModulesDirectory(
-			Path.Combine(projectRoot, manifest.Modules!));
+		interpreter.SetModulesDirectory(Path.Combine(projectRoot, manifest.Modules!));
+		interpreter.SetLibrariesDirectory(Path.Combine(projectRoot, manifest.Libraries!));
 
 		interpreter.Initialize(program);
 		interpreter.Execute();
@@ -104,12 +104,20 @@ public class Program
 
 		Directory.CreateDirectory(modulesDirectory);
 
+		// Create Libraries Directory
+		string librariesDirectory = Path.Combine(
+			projectRoot,
+			"Libraries");
+
+		Directory.CreateDirectory(librariesDirectory);
+
 		// Create sud.manifest
 		string manifest =
 	@$"
 project = {projectName}
 entry = ""src/Main.sud""
 modules = ""src/Modules""
+libraries = ""Libraries""
 ";
 
 		File.WriteAllText(
@@ -164,178 +172,514 @@ func main()
 
 	static void BuildProject()
 	{
-	    string manifestPath = FindManifest(Directory.GetCurrentDirectory());
-	    Manifest manifest = Manifest.Load(manifestPath);
-	    string projectRoot = Path.GetDirectoryName(manifestPath)!;
+		string manifestPath = FindManifest(
+			Directory.GetCurrentDirectory());
 
-	    string entryPath = Path.Combine(projectRoot, manifest.Entry!);
-	    string modulesPath = Path.Combine(projectRoot, manifest.Modules!);
+		Manifest manifest = Manifest.Load(manifestPath);
 
-	    // Validate the entry source before doing anything else.
-	    string source = File.ReadAllText(entryPath);
-	    var lexer = new Lexer(source);
-	    var parser = new Parser(lexer.Tokenize());
-	    var program = parser.ParseProgram();
+		string projectRoot = Path.GetDirectoryName(manifestPath)!;
 
-	    string buildDir = Path.Combine(projectRoot, "build");
-	    string genDir = Path.Combine(buildDir, "gen");
-	    Directory.CreateDirectory(genDir);
+		if (string.IsNullOrWhiteSpace(manifest.Project))
+		{
+			throw new Exception("Manifest is missing 'project'.");
+		}
 
-	    // Collect all .sud files that must be embedded.
-	    var embeddedFiles = new Dictionary<string, string>();
+		if (string.IsNullOrWhiteSpace(manifest.Entry))
+		{
+			throw new Exception("Manifest is missing 'entry'.");
+		}
 
-	    string entryRelative = Path.GetRelativePath(projectRoot, entryPath).Replace('\\', '/');
-	    embeddedFiles[entryRelative] = source;
+		if (string.IsNullOrWhiteSpace(manifest.Modules))
+		{
+			throw new Exception("Manifest is missing 'modules'.");
+		}
 
-	    if (Directory.Exists(modulesPath))
-	    {
-	        foreach (string file in Directory.EnumerateFiles(modulesPath, "*.sud", SearchOption.AllDirectories))
-	        {
-	            string relative = Path.GetRelativePath(projectRoot, file).Replace('\\', '/');
-	            embeddedFiles[relative] = File.ReadAllText(file);
-	        }
-	    }
+		if (string.IsNullOrWhiteSpace(manifest.Libraries))
+		{
+			throw new Exception("Manifest is missing 'libraries'.");
+		}
 
-	    // Generate the host Program.cs.
-	    var sb = new StringBuilder();
-	    sb.AppendLine("using System;");
-	    sb.AppendLine("using System.Collections.Generic;");
-	    sb.AppendLine("using System.IO;");
-	    sb.AppendLine("using SudScript;");
-	    sb.AppendLine();
-	    sb.AppendLine("class Program");
-	    sb.AppendLine("{");
-	    sb.AppendLine("    static void Main()");
-	    sb.AppendLine("    {");
-	    sb.AppendLine("        var files = new Dictionary<string, string>");
-	    sb.AppendLine("        {");
+		string entryPath = Path.GetFullPath(
+			Path.Combine(projectRoot, manifest.Entry));
 
-	    foreach (var kv in embeddedFiles)
-	    {
-	        string key = kv.Key;
-	        string b64 = Convert.ToBase64String(Encoding.UTF8.GetBytes(kv.Value));
-	        sb.AppendLine($"            [\"{key}\"] = \"{b64}\",");
-	    }
+		string modulesPath = Path.GetFullPath(
+			Path.Combine(projectRoot, manifest.Modules));
 
-	    sb.AppendLine("        };");
-	    sb.AppendLine();
-	    sb.AppendLine("        string tempDir = Path.Combine(Path.GetTempPath(), \"sud_\" + Guid.NewGuid().ToString(\"N\"));");
-	    sb.AppendLine("        Directory.CreateDirectory(tempDir);");
-	    sb.AppendLine("        try");
-	    sb.AppendLine("        {");
-	    sb.AppendLine("            foreach (var kv in files)");
-	    sb.AppendLine("            {");
-	    sb.AppendLine("                string fullPath = Path.Combine(tempDir, kv.Key.Replace('/', Path.DirectorySeparatorChar));");
-	    sb.AppendLine("                Directory.CreateDirectory(Path.GetDirectoryName(fullPath)!);");
-	    sb.AppendLine("                File.WriteAllBytes(fullPath, Convert.FromBase64String(kv.Value));");
-	    sb.AppendLine("            }");
-	    sb.AppendLine();
+		string librariesPath = Path.GetFullPath(
+			Path.Combine(projectRoot, manifest.Libraries));
 
-	    string entryPathParts = string.Join(", ",
-	        entryRelative.Split('/').Select(part => "\"" + part + "\""));
-	    sb.AppendLine($"        string entryFile = Path.Combine(tempDir, {entryPathParts});");
-	    sb.AppendLine("        string src = File.ReadAllText(entryFile);");
-	    sb.AppendLine("        var lexer = new Lexer(src);");
-	    sb.AppendLine("        var parser = new Parser(lexer.Tokenize());");
-	    sb.AppendLine("        var program = parser.ParseProgram();");
-	    sb.AppendLine("        var interpreter = new Interpreter();");
-	    sb.AppendLine();
+		// ------------------------------------------------------------
+		// Validate entry source
+		// ------------------------------------------------------------
 
-	    string modulesRelative = Path.GetRelativePath(projectRoot, modulesPath)
-	        .Replace('\\', '/');
-	    string modulesDirParts = string.Join(", ",
-	        modulesRelative.Split('/').Select(part => "\"" + part + "\""));
-	    sb.AppendLine($"        string modulesDir = Path.Combine(tempDir, {modulesDirParts});");
-	    sb.AppendLine("        Directory.CreateDirectory(modulesDir);");
-	    sb.AppendLine("        interpreter.SetModulesDirectory(modulesDir);");
-	    sb.AppendLine("        interpreter.Initialize(program);");
-	    sb.AppendLine("        interpreter.Execute();");
-	    sb.AppendLine("        }");
-	    sb.AppendLine("        finally");
-	    sb.AppendLine("        {");
-	    sb.AppendLine("            try { Directory.Delete(tempDir, true); } catch {}");
-	    sb.AppendLine("        }");
-	    sb.AppendLine("    }");
-	    sb.AppendLine("}");
+		if (!File.Exists(entryPath))
+		{
+			throw new FileNotFoundException(
+				$"Entry file '{entryPath}' does not exist.");
+		}
 
-	    File.WriteAllText(Path.Combine(genDir, "Program.cs"), sb.ToString());
+		string source = File.ReadAllText(entryPath);
 
-	    // Generate a .csproj that references the SudScript runtime library.
-	    string runtimeAssemblyPath = typeof(Interpreter).Assembly.Location;
+		var lexer = new Lexer(source);
+		var parser = new Parser(lexer.Tokenize());
+		var program = parser.ParseProgram();
 
-	    // If the assembly is loaded from a single-file bundle, Location may be empty.
-	    // Fallback to System.Environment.ProcessPath (the executable itself).
-	    if (string.IsNullOrEmpty(runtimeAssemblyPath))
-	    {
-	        runtimeAssemblyPath = System.Environment.ProcessPath ?? string.Empty;
-	    }
+		// ------------------------------------------------------------
+		// Build directories
+		// ------------------------------------------------------------
 
-	    if (string.IsNullOrEmpty(runtimeAssemblyPath))
-	    {
-	        throw new Exception("Could not locate the SudScript runtime assembly.");
-	    }
+		string buildDir = Path.Combine(
+			projectRoot,
+			"build");
 
-	    string csproj = $@"
-		<Project Sdk=""Microsoft.NET.Sdk"">
-			<PropertyGroup>
-				<OutputType>Exe</OutputType>
-		    	<TargetFramework>net9.0</TargetFramework>
-		     	<ImplicitUsings>enable</ImplicitUsings>
-		     	<Nullable>enable</Nullable>
-		      	<AssemblyName>{manifest.Project}</AssemblyName>
-		    </PropertyGroup>
-		    <ItemGroup>
-		    	<Reference Include=""SudScript.Library"">
-		     	<HintPath>{runtimeAssemblyPath}</HintPath>
-		    </Reference>
-		    </ItemGroup>
-		</Project>";
+		string genDir = Path.Combine(
+			buildDir,
+			"gen");
 
-	    File.WriteAllText(Path.Combine(genDir, "SudScript.csproj"), csproj);
+		string outputDir = Path.Combine(
+			buildDir,
+			"standalone");
 
-	    // 4. Publish as a self-contained single-file executable.
-	    string rid = RuntimeInformation.RuntimeIdentifier;
-	    string outputDir = Path.Combine(buildDir, "standalone");
-	    Directory.CreateDirectory(outputDir);
+		Directory.CreateDirectory(genDir);
+		Directory.CreateDirectory(outputDir);
 
-	    var psi = new ProcessStartInfo
-	    {
-	        FileName = "dotnet",
-	        WorkingDirectory = projectRoot,
-	        RedirectStandardOutput = true,
-	        RedirectStandardError = true,
-	        UseShellExecute = false
-	    };
+		// ------------------------------------------------------------
+		// Collect files that need to be embedded
+		//
+		// These are stored as bytes so that both .sud files and
+		// external .dll files can be embedded safely.
+		// ------------------------------------------------------------
 
-	    psi.ArgumentList.Add("publish");
-	    psi.ArgumentList.Add(Path.Combine(genDir, "SudScript.csproj"));
-	    psi.ArgumentList.Add("-c");
-	    psi.ArgumentList.Add("Release");
-	    psi.ArgumentList.Add("-r");
-	    psi.ArgumentList.Add(rid);
-	    psi.ArgumentList.Add("--self-contained");
-	    psi.ArgumentList.Add("true");
-	    psi.ArgumentList.Add("-p:PublishSingleFile=true");
-	    psi.ArgumentList.Add("-o");
-	    psi.ArgumentList.Add(outputDir);
+		var embeddedFiles = new Dictionary<string, byte[]>(
+			StringComparer.Ordinal);
 
-	    using var process = Process.Start(psi)!;
-	    string stdout = process.StandardOutput.ReadToEnd();
-		string stderr = process.StandardError.ReadToEnd();
+		// Entry script
+		string entryRelative =
+			Path.GetRelativePath(
+				projectRoot,
+				entryPath)
+			.Replace('\\', '/');
+
+		embeddedFiles[entryRelative] =
+			Encoding.UTF8.GetBytes(source);
+
+		// ------------------------------------------------------------
+		// Collect modules
+		// ------------------------------------------------------------
+
+		if (Directory.Exists(modulesPath))
+		{
+			foreach (string file in Directory.EnumerateFiles(
+				modulesPath,
+				"*.sud",
+				SearchOption.AllDirectories))
+			{
+				string relative =
+					Path.GetRelativePath(
+						projectRoot,
+						file)
+					.Replace('\\', '/');
+
+				embeddedFiles[relative] =
+					File.ReadAllBytes(file);
+			}
+		}
+
+		// ------------------------------------------------------------
+		// Collect external libraries
+		//
+		// Everything in Libraries/**/*.dll gets embedded.
+		// This also allows a library to have dependency DLLs placed
+		// in the same directory.
+		// ------------------------------------------------------------
+
+		if (Directory.Exists(librariesPath))
+		{
+			foreach (string file in Directory.EnumerateFiles(
+				librariesPath,
+				"*.dll",
+				SearchOption.AllDirectories))
+			{
+				string relative =
+					Path.GetRelativePath(
+						projectRoot,
+						file)
+					.Replace('\\', '/');
+
+				embeddedFiles[relative] =
+					File.ReadAllBytes(file);
+			}
+		}
+
+		// ------------------------------------------------------------
+		// Generate host Program.cs
+		// ------------------------------------------------------------
+
+		var sb = new StringBuilder();
+
+		sb.AppendLine("using System;");
+		sb.AppendLine("using System.Collections.Generic;");
+		sb.AppendLine("using System.IO;");
+		sb.AppendLine("using SudScript;");
+		sb.AppendLine();
+		sb.AppendLine("class Program");
+		sb.AppendLine("{");
+		sb.AppendLine("    static void Main()");
+		sb.AppendLine("    {");
+
+		// Embedded files
+		sb.AppendLine(
+			"        var files = new Dictionary<string, string>");
+		sb.AppendLine("        {");
+
+		foreach (var kv in embeddedFiles)
+		{
+			string key = kv.Key;
+
+			string b64 =
+				Convert.ToBase64String(kv.Value);
+
+			string escapedKey =
+				key.Replace("\\", "\\\\")
+				   .Replace("\"", "\\\"");
+
+			sb.AppendLine(
+				$"            [\"{escapedKey}\"] = \"{b64}\",");
+		}
+
+		sb.AppendLine("        };");
+		sb.AppendLine();
+
+		// ------------------------------------------------------------
+		// Create temporary runtime directory
+		// ------------------------------------------------------------
+
+		sb.AppendLine(
+			"        string tempDir = Path.Combine(");
+		sb.AppendLine(
+			"            Path.GetTempPath(),");
+		sb.AppendLine(
+			"            \"sud_\" + Guid.NewGuid().ToString(\"N\"));");
+
+		sb.AppendLine(
+			"        Directory.CreateDirectory(tempDir);");
+
+		sb.AppendLine("        try");
+		sb.AppendLine("        {");
+
+		// ------------------------------------------------------------
+		// Extract embedded files
+		// ------------------------------------------------------------
+
+		sb.AppendLine(
+			"            foreach (var kv in files)");
+		sb.AppendLine("            {");
+
+		sb.AppendLine(
+			"                string fullPath = Path.Combine(");
+		sb.AppendLine(
+			"                    tempDir,");
+		sb.AppendLine(
+			"                    kv.Key.Replace('/', Path.DirectorySeparatorChar));");
+
+		sb.AppendLine(
+			"                string? directory = Path.GetDirectoryName(fullPath);");
+
+		sb.AppendLine(
+			"                if (directory != null)");
+		sb.AppendLine(
+			"                {");
+		sb.AppendLine(
+			"                    Directory.CreateDirectory(directory);");
+		sb.AppendLine(
+			"                }");
+
+		sb.AppendLine(
+			"                File.WriteAllBytes(");
+		sb.AppendLine(
+			"                    fullPath,");
+		sb.AppendLine(
+			"                    Convert.FromBase64String(kv.Value));");
+
+		sb.AppendLine("            }");
+
+		sb.AppendLine();
+
+		// ------------------------------------------------------------
+		// Entry file
+		// ------------------------------------------------------------
+
+		string entryPathParts =
+			string.Join(
+				", ",
+				entryRelative
+					.Split('/', StringSplitOptions.RemoveEmptyEntries)
+					.Select(part =>
+						"\"" +
+						part.Replace("\\", "\\\\")
+							.Replace("\"", "\\\"") +
+						"\""));
+
+		sb.AppendLine(
+			$"            string entryFile = Path.Combine(" +
+			$"tempDir, {entryPathParts});");
+
+		sb.AppendLine(
+			"            string src = File.ReadAllText(entryFile);");
+
+		sb.AppendLine(
+			"            var lexer = new Lexer(src);");
+
+		sb.AppendLine(
+			"            var parser = new Parser(lexer.Tokenize());");
+
+		sb.AppendLine(
+			"            var program = parser.ParseProgram();");
+
+		sb.AppendLine(
+			"            var interpreter = new Interpreter();");
+
+		sb.AppendLine();
+
+		// ------------------------------------------------------------
+		// Modules directory
+		// ------------------------------------------------------------
+
+		string modulesRelative =
+			Path.GetRelativePath(
+				projectRoot,
+				modulesPath)
+			.Replace('\\', '/');
+
+		string modulesDirParts =
+			string.Join(
+				", ",
+				modulesRelative
+					.Split('/', StringSplitOptions.RemoveEmptyEntries)
+					.Select(part =>
+						"\"" +
+						part.Replace("\\", "\\\\")
+							.Replace("\"", "\\\"") +
+						"\""));
+
+		sb.AppendLine(
+			$"            string modulesDir = Path.Combine(" +
+			$"tempDir, {modulesDirParts});");
+
+		sb.AppendLine(
+			"            Directory.CreateDirectory(modulesDir);");
+
+		sb.AppendLine(
+			"            interpreter.SetModulesDirectory(modulesDir);");
+
+		//sb.AppendLine(
+		//	"            interpreter.SetLibrariesDirectory(Path.Combine(projectRoot, manifest.Libraries!));");
+
+		sb.AppendLine();
+
+		// ------------------------------------------------------------
+		// Libraries directory
+		// ------------------------------------------------------------
+
+		string librariesRelative =
+			Path.GetRelativePath(
+				projectRoot,
+				librariesPath)
+			.Replace('\\', '/');
+
+		string librariesDirParts =
+			string.Join(
+				", ",
+				librariesRelative
+					.Split('/', StringSplitOptions.RemoveEmptyEntries)
+					.Select(part =>
+						"\"" +
+						part.Replace("\\", "\\\\")
+							.Replace("\"", "\\\"") +
+						"\""));
+
+		sb.AppendLine(
+			$"            string librariesDir = Path.Combine(" +
+			$"tempDir, {librariesDirParts});");
+
+		sb.AppendLine(
+			"            Directory.CreateDirectory(librariesDir);");
+
+		sb.AppendLine(
+			"            interpreter.SetLibrariesDirectory(librariesDir);");
+
+		sb.AppendLine();
+
+		// ------------------------------------------------------------
+		// Run interpreter
+		// ------------------------------------------------------------
+
+		sb.AppendLine(
+			"            interpreter.Initialize(program);");
+
+		sb.AppendLine(
+			"            interpreter.Execute();");
+
+		// ------------------------------------------------------------
+		// Cleanup
+		// ------------------------------------------------------------
+
+		sb.AppendLine("        }");
+		sb.AppendLine("        finally");
+		sb.AppendLine("        {");
+		sb.AppendLine(
+			"            try");
+		sb.AppendLine(
+			"            {");
+		sb.AppendLine(
+			"                Directory.Delete(tempDir, true);");
+		sb.AppendLine(
+			"            }");
+		sb.AppendLine(
+			"            catch");
+		sb.AppendLine(
+			"            {");
+		sb.AppendLine(
+			"                // Ignore cleanup failures.");
+		sb.AppendLine(
+			"            }");
+		sb.AppendLine("        }");
+
+		sb.AppendLine("    }");
+		sb.AppendLine("}");
+
+		// ------------------------------------------------------------
+		// Write generated host
+		// ------------------------------------------------------------
+
+		string generatedProgramPath =
+			Path.Combine(
+				genDir,
+				"Program.cs");
+
+		File.WriteAllText(
+			generatedProgramPath,
+			sb.ToString());
+
+		// Locate SudScript runtime assembly
+		string runtimeAssemblyPath = typeof(Interpreter).Assembly.Location;
+
+		if (string.IsNullOrEmpty(runtimeAssemblyPath))
+		{
+			runtimeAssemblyPath = System.Environment.ProcessPath ?? string.Empty;
+		}
+
+		if (string.IsNullOrEmpty(runtimeAssemblyPath))
+		{
+			throw new Exception("Could not locate the SudScript runtime assembly.");
+		}
+
+		// ------------------------------------------------------------
+		// Generate temporary .csproj
+		// ------------------------------------------------------------
+
+		string csproj = $@"
+	<Project Sdk=""Microsoft.NET.Sdk"">
+		<PropertyGroup>
+			<OutputType>Exe</OutputType>
+			<TargetFramework>net9.0</TargetFramework>
+			<ImplicitUsings>enable</ImplicitUsings>
+			<Nullable>enable</Nullable>
+			<AssemblyName>{manifest.Project}</AssemblyName>
+		</PropertyGroup>
+
+		<ItemGroup>
+			<Reference Include=""SudScript.Library"">
+				<HintPath>{runtimeAssemblyPath}</HintPath>
+			</Reference>
+		</ItemGroup>
+	</Project>";
+
+		string csprojPath =
+			Path.Combine(
+				genDir,
+				"SudScript.csproj");
+
+		File.WriteAllText(
+			csprojPath,
+			csproj);
+
+		// ------------------------------------------------------------
+		// Publish
+		// ------------------------------------------------------------
+
+		string rid =
+			RuntimeInformation.RuntimeIdentifier;
+
+		var psi = new ProcessStartInfo
+		{
+			FileName = "dotnet",
+			WorkingDirectory = projectRoot,
+			RedirectStandardOutput = true,
+			RedirectStandardError = true,
+			UseShellExecute = false
+		};
+
+		psi.ArgumentList.Add("publish");
+		psi.ArgumentList.Add(csprojPath);
+		psi.ArgumentList.Add("-c");
+		psi.ArgumentList.Add("Release");
+		psi.ArgumentList.Add("-r");
+		psi.ArgumentList.Add(rid);
+		psi.ArgumentList.Add("--self-contained");
+		psi.ArgumentList.Add("true");
+		psi.ArgumentList.Add("-p:PublishSingleFile=true");
+		psi.ArgumentList.Add("-o");
+		psi.ArgumentList.Add(outputDir);
+
+		using var process = Process.Start(psi)
+			?? throw new Exception(
+				"Failed to start dotnet publish.");
+
+		string stdout =
+			process.StandardOutput.ReadToEnd();
+
+		string stderr =
+			process.StandardError.ReadToEnd();
 
 		process.WaitForExit();
 
-	    string exeName = manifest.Project + (OperatingSystem.IsWindows() ? ".exe" : "");
-	    string finalExe = Path.Combine(outputDir, exeName);
+		if (process.ExitCode != 0)
+		{
+			throw new Exception(
+				$"dotnet publish failed.\n\n{stdout}\n{stderr}");
+		}
 
-	    if (!File.Exists(finalExe))
-	    {
-	        throw new Exception($"Publish did not produce expected file: {finalExe}");
-	    }
+		// ------------------------------------------------------------
+		// Verify output
+		// ------------------------------------------------------------
 
-	    string targetExe = Path.Combine(buildDir, exeName);
-	    File.Copy(finalExe, targetExe, true);
+		string exeName =
+			manifest.Project +
+			(OperatingSystem.IsWindows() ? ".exe" : "");
 
-	    Console.WriteLine($"Built {targetExe}");
+		string finalExe =
+			Path.Combine(
+				outputDir,
+				exeName);
+
+		if (!File.Exists(finalExe))
+		{
+			throw new Exception(
+				$"Publish did not produce expected file: {finalExe}");
+		}
+
+		// Copy final executable to build/<project>
+		string targetExe =
+			Path.Combine(
+				buildDir,
+				exeName);
+
+		File.Copy(
+			finalExe,
+			targetExe,
+			true);
+
+		Console.WriteLine($"Built {targetExe}");
 	}
 }

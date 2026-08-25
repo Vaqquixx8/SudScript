@@ -5,6 +5,7 @@ public class Manifest
 	public string? Project;
 	public string? Entry;
 	public string? Modules;
+	public string? Libraries;
 
 	public static Manifest Load(string path)
 	{
@@ -37,6 +38,9 @@ public class Manifest
 					break;
 				case "modules":
 					manifest.Modules = value;
+					break;
+				case "libraries":
+					manifest.Libraries = value;
 					break;
 			}
 		}

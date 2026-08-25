@@ -51,9 +51,9 @@ public class ModuleLoader(string _baseDirectory)
 	{
 		string groupName = string.Join(":", path);
 
-		if(StandardLibraries.Exists(groupName))
+		if(Libraries.Exists(groupName))
 		{
-			return [LoadStandardLibrary(groupName)];
+			return [LoadLibrary(groupName)];
 		}
 
 		var environments = new List<Environment>();
@@ -66,11 +66,11 @@ public class ModuleLoader(string _baseDirectory)
 		return environments;
 	}
 
-	Environment LoadStandardLibrary(string name)
+	Environment LoadLibrary(string name)
 	{
 		Environment environment = new Environment();
 
-		StructDeclaration declaration = StandardLibraries.CreateStruct(name);
+		StructDeclaration declaration = Libraries.CreateStruct(name);
 
 		environment.DefineStruct(declaration.Name, declaration);
 		return environment;

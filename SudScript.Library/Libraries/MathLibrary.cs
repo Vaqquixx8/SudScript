@@ -1,8 +1,10 @@
 namespace SudScript;
 
-public static class MathLibrary
+public sealed class MathLibrary : ILibrary
 {
-	public static StructDeclaration Create()
+	public string Name => "Sud:Math";
+
+	public StructDeclaration Create()
 	{
 		return new StructDeclaration(
 			"MathState",

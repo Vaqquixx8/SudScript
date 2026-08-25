@@ -3,9 +3,11 @@ using System.Threading;
 
 namespace SudScript;
 
-public static class TimerLibrary
+public sealed class TimerLibrary : ILibrary
 {
-	public static StructDeclaration Create()
+	public string Name => "Sud:Time";
+
+	public StructDeclaration Create()
 	{
 		Stopwatch stopwatch = new Stopwatch();
 

@@ -34,17 +34,6 @@ public record StructDeclarationValue(
 	Dictionary<string, FunctionDeclaration> Methods
 );
 
-/*public record NativeFunctionDeclaration : FunctionDeclaration
-{
-	public Func<List<Value>, Value> Implementation {get;}
-	public string Name;
-	public NativeFunctionDeclaration(string name, Func<List<Value>, Value?> implementation)
-	{
-		Name = name;
-		Implementation = implementation;
-	}
-}*/
-
 // =======================================================
 // Statements
 // =======================================================

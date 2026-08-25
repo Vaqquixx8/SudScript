@@ -9,11 +9,16 @@ public class Interpreter
 	Environment environment = new Environment();
 	ProgramNode? program;
 	string modulesDirectory = null!;
+	string librariesDirectory = null!;
 	readonly Dictionary<string, Func<List<Value>, Value>> builtins = new Dictionary<string, Func<List<Value>, Value>>();
 
 	public void SetModulesDirectory(string path)
 	{
 		modulesDirectory = path;
+	}
+	public void SetLibrariesDirectory(string path)
+	{
+		librariesDirectory = path;
 	}
 
 	public void Initialize(ProgramNode _program)
@@ -21,22 +26,21 @@ public class Interpreter
 		program = _program;
 		environment = new Environment();
 
-		string baseDir;
 		if (modulesDirectory == null)
 		{
 			throw new Exception($"No modules directory set.");
 		}
-		else
+		if(librariesDirectory == null)
 		{
-			baseDir = modulesDirectory;
+			throw new Exception($"No libraries directory set.");
 		}
 
-		if (!Path.IsPathRooted(baseDir))
-		{
-			baseDir = Path.GetFullPath(baseDir);
-		}
+		string modulesDir = Path.GetFullPath(modulesDirectory);
+		string librariesDir = Path.GetFullPath(librariesDirectory);
 
-		var loader = new ModuleLoader(baseDir);
+		ExternalLibraryLoader.LoadDirectory(librariesDir);
+
+		var loader = new ModuleLoader(modulesDir);
 		loader.BuildGroupIndex();
 
 		foreach (var stmt in program.Body)
