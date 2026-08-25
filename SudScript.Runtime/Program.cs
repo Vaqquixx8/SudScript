@@ -127,7 +127,7 @@ libraries = ""Libraries""
 		string mainScript =
 @"need Sud:IO
 
-let io = IO{}
+let io = IOState{}
 
 func main()
 {
@@ -243,13 +243,6 @@ func main()
 		Directory.CreateDirectory(genDir);
 		Directory.CreateDirectory(outputDir);
 
-		// ------------------------------------------------------------
-		// Collect files that need to be embedded
-		//
-		// These are stored as bytes so that both .sud files and
-		// external .dll files can be embedded safely.
-		// ------------------------------------------------------------
-
 		var embeddedFiles = new Dictionary<string, byte[]>(
 			StringComparer.Ordinal);
 
@@ -284,14 +277,6 @@ func main()
 					File.ReadAllBytes(file);
 			}
 		}
-
-		// ------------------------------------------------------------
-		// Collect external libraries
-		//
-		// Everything in Libraries/**/*.dll gets embedded.
-		// This also allows a library to have dependency DLLs placed
-		// in the same directory.
-		// ------------------------------------------------------------
 
 		if (Directory.Exists(librariesPath))
 		{
