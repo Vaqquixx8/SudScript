@@ -317,10 +317,116 @@ public class Interpreter
 
 		return target switch
 		{
+			StringValue str => CallStringMethod(str, call.Method, args),
 			ListValue list => CallListMethod(list, call.Method, args),
 			StructInstanceValue instance => CallStructInstanceMethod(instance, call.Method, args),
 			_ => throw new Exception($"{target.GetType().Name} has not method '{call.Method}'."),
 		};
+	}
+
+	static Value CallStringMethod(StringValue str, string method, List<Value> args)
+	{
+	    switch (method)
+	    {
+	        case "length":
+	        {
+	            return new NumberValue(str.Value.Length);
+	        }
+	        case "get":
+	        {
+	            int index = (int)((NumberValue)args[0]).Value;
+	            return new StringValue(str.Value[index].ToString());
+	        }
+	        case "set":
+	        {
+	            int index = (int)((NumberValue)args[0]).Value;
+	            string value = ((StringValue)args[1]).Value;
+
+	            char[] chars = str.Value.ToCharArray();
+	            chars[index] = value[0];
+
+	            str.Value = new string(chars);
+	            return new StringValue(value);
+	        }
+	        case "contains":
+	        {
+	            string value = ((StringValue)args[0]).Value;
+	            return new BooleanValue(str.Value.Contains(value));
+	        }
+	        case "startsWith":
+	        {
+	            string value = ((StringValue)args[0]).Value;
+	            return new BooleanValue(str.Value.StartsWith(value));
+	        }
+	        case "endsWith":
+	        {
+	            string value = ((StringValue)args[0]).Value;
+	            return new BooleanValue(str.Value.EndsWith(value));
+	        }
+	        case "indexOf":
+	        {
+	            string value = ((StringValue)args[0]).Value;
+	            return new NumberValue(str.Value.IndexOf(value));
+	        }
+	        case "lastIndexOf":
+	        {
+	            string value = ((StringValue)args[0]).Value;
+	            return new NumberValue(str.Value.LastIndexOf(value));
+	        }
+	        case "substring":
+	        {
+	            int start = (int)((NumberValue)args[0]).Value;
+
+	            if (args.Count > 1)
+	            {
+	                int length = (int)((NumberValue)args[1]).Value;
+	                return new StringValue(str.Value.Substring(start, length));
+	            }
+
+	            return new StringValue(str.Value.Substring(start));
+	        }
+	        case "toUpper":
+	        {
+	            return new StringValue(str.Value.ToUpper());
+	        }
+	        case "toLower":
+	        {
+	            return new StringValue(str.Value.ToLower());
+	        }
+	        case "trim":
+	        {
+	            return new StringValue(str.Value.Trim());
+	        }
+	        case "replace":
+	        {
+	            string oldValue = ((StringValue)args[0]).Value;
+	            string newValue = ((StringValue)args[1]).Value;
+
+	            return new StringValue(str.Value.Replace(oldValue, newValue));
+	        }
+	        case "split":
+	        {
+	            string separator = ((StringValue)args[0]).Value;
+
+	            var values = str.Value
+	                .Split(separator)
+	                .Select(s => (Value)new StringValue(s))
+	                .ToList();
+
+	            return new ListValue(values);
+	        }
+	        case "reverse":
+	        {
+	            return new StringValue(new string(str.Value.Reverse().ToArray()));
+	        }
+	        case "repeat":
+	        {
+	            int count = (int)((NumberValue)args[0]).Value;
+	            return new StringValue(string.Concat(Enumerable.Repeat(str.Value, count)));
+	        }
+	        default:
+	            throw new Exception($"Unknown string method '{method}'.");
+	    }
 	}
 
 	static Value CallListMethod(ListValue list, string method, List<Value> args)
@@ -386,7 +492,7 @@ public class Interpreter
 				list.Values.Clear();
 				return new VoidValue();
 			}
-			case "first":
+			case "indexOf":
 			{
 			    for (int i = 0; i < list.Values.Count; ++i)
 			    {
