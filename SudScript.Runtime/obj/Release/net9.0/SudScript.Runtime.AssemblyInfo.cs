@@ -14,7 +14,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Release")]
 [assembly: System.Reflection.AssemblyDescriptionAttribute("SudScript programming language CLI")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("0.0.3.8")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("0.0.3.8+2c601df63eeb9b9ef10957de2d0a26682af1f062")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("0.0.3.8+ea52abfbab8df5233770e89c45d5eb159c1250df")]
 [assembly: System.Reflection.AssemblyProductAttribute("SudScript.Runtime")]
 [assembly: System.Reflection.AssemblyTitleAttribute("SudScript.Runtime")]
 [assembly: System.Reflection.AssemblyVersionAttribute("0.0.3.8")]

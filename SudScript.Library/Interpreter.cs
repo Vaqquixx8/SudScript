@@ -337,17 +337,6 @@ public class Interpreter
 	            int index = (int)((NumberValue)args[0]).Value;
 	            return new StringValue(str.Value[index].ToString());
 	        }
-	        case "set":
-	        {
-	            int index = (int)((NumberValue)args[0]).Value;
-	            string value = ((StringValue)args[1]).Value;
-
-	            char[] chars = str.Value.ToCharArray();
-	            chars[index] = value[0];
-
-	            str.Value = new string(chars);
-	            return new StringValue(value);
-	        }
 	        case "contains":
 	        {
 	            string value = ((StringValue)args[0]).Value;
