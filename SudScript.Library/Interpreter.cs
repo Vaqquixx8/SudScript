@@ -325,7 +325,7 @@ public class Interpreter
 
 	static Value CallListMethod(ListValue list, string method, List<Value> args)
 	{
-		switch (method)
+		switch(method)
 		{
 			case "get":
 			{
@@ -781,7 +781,7 @@ public class Interpreter
 		};
 	}
 
-	static bool AreEqual(Value left, Value right)
+	public static bool AreEqual(Value left, Value right)
 	{
 		return (left, right) switch
 		{
