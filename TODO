@@ -81,6 +81,10 @@ Control Flow Improvements
 		is all a
 		single
 		comment */
+[ ] 'switch' Statement (Name as 'jump')
+	[ ] Lexer
+	[ ] Parser
+	[ ] Interpreter
 [x] Empty variable declarations "let myVar = null"
 
 Endgame Shit

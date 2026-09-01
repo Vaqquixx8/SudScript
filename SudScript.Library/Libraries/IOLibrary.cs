@@ -70,35 +70,35 @@ public sealed class IOLibrary : ILibrary
 					},
 					0),
 				new NativeFunctionDeclaration(
-				    "consoleSetTextColor",
-				    args =>
-				    {
-				        string colorName = Interpreter.ToText(args[0]);
+					"consoleSetTextColor",
+					args =>
+					{
+						string colorName = Interpreter.ToText(args[0]);
 
-				        if (!Enum.TryParse<ConsoleColor>(colorName, true, out var color))
-				        {
-				            throw new Exception($"{colorName} is not a valid Console color.");
-				        }
+						if (!Enum.TryParse<ConsoleColor>(colorName, true, out var color))
+						{
+							throw new Exception($"{colorName} is not a valid Console color.");
+						}
 
-				        Console.ForegroundColor = color;
-				        return new VoidValue();
-				    },
-				    1),
+						Console.ForegroundColor = color;
+						return new VoidValue();
+					},
+					1),
 				new NativeFunctionDeclaration(
-				    "consoleSetBackgroundColor",
-				    args =>
-				    {
-				        string colorName = Interpreter.ToText(args[0]);
+					"consoleSetBackgroundColor",
+					args =>
+					{
+						string colorName = Interpreter.ToText(args[0]);
 
-				        if (!Enum.TryParse<ConsoleColor>(colorName, true, out var color))
-				        {
-				            throw new Exception($"{colorName} is not a valid Console color.");
-				        }
+						if (!Enum.TryParse<ConsoleColor>(colorName, true, out var color))
+						{
+							throw new Exception($"{colorName} is not a valid Console color.");
+						}
 
-				        Console.BackgroundColor = color;
-				        return new VoidValue();
-				    },
-				    1)
+						Console.BackgroundColor = color;
+						return new VoidValue();
+					},
+					1)
 			}
 		);
 	}

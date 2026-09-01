@@ -271,29 +271,29 @@ public class Parser(List<Token> _tokens)
 
 	Expression ParseAssignment()
 	{
-	    Expression left = ParseLogicalOr();
+		Expression left = ParseLogicalOr();
 
-	    if (Current.type == TokenType.Equals ||
-	        Current.type == TokenType.PlusEquals ||
-	        Current.type == TokenType.MinusEquals ||
-	        Current.type == TokenType.TimesEquals ||
-	        Current.type == TokenType.DivideEquals)
-	    {
-	        TokenType op = Consume().type;
+		if (Current.type == TokenType.Equals ||
+			Current.type == TokenType.PlusEquals ||
+			Current.type == TokenType.MinusEquals ||
+			Current.type == TokenType.TimesEquals ||
+			Current.type == TokenType.DivideEquals)
+		{
+			TokenType op = Consume().type;
 
-	        Expression value = ParseAssignment();
+			Expression value = ParseAssignment();
 
-	        return left switch
-	        {
-	            IdentifierExpression id => new AssignmentExpression(id, value, op),
+			return left switch
+			{
+				IdentifierExpression id => new AssignmentExpression(id, value, op),
 
-	            MemberAccessExpression member => new AssignmentExpression(member, value, op),
+				MemberAccessExpression member => new AssignmentExpression(member, value, op),
 
-	            _ => throw new Exception("Invalid assignment target.")
-	        };
-	    }
+				_ => throw new Exception("Invalid assignment target.")
+			};
+		}
 
-	    return left;
+		return left;
 	}
 
 	Expression ParseLogicalOr()

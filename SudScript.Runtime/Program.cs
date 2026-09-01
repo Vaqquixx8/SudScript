@@ -14,9 +14,9 @@ public class Program
 		{
 			Console.WriteLine("Usage: sud <command>");
 			Console.WriteLine("Commands:");
-			Console.WriteLine("  new <name>   Create a new Sud project");
-			Console.WriteLine("  run     Run the current Sud project");
-			Console.WriteLine("  build     Build the current Sud project");
+			Console.WriteLine("  new <name>	Create a new Sud project");
+			Console.WriteLine("  run	 Run the current Sud project");
+			Console.WriteLine("  build	 Build the current Sud project");
 			return;
 		}
 
@@ -309,13 +309,13 @@ func main()
 		sb.AppendLine();
 		sb.AppendLine("class Program");
 		sb.AppendLine("{");
-		sb.AppendLine("    static void Main()");
-		sb.AppendLine("    {");
+		sb.AppendLine("	static void Main()");
+		sb.AppendLine("	{");
 
 		// Embedded files
 		sb.AppendLine(
-			"        var files = new Dictionary<string, string>");
-		sb.AppendLine("        {");
+			"		var files = new Dictionary<string, string>");
+		sb.AppendLine("		{");
 
 		foreach (var kv in embeddedFiles)
 		{
@@ -326,13 +326,13 @@ func main()
 
 			string escapedKey =
 				key.Replace("\\", "\\\\")
-				   .Replace("\"", "\\\"");
+					.Replace("\"", "\\\"");
 
 			sb.AppendLine(
-				$"            [\"{escapedKey}\"] = \"{b64}\",");
+				$"			[\"{escapedKey}\"] = \"{b64}\",");
 		}
 
-		sb.AppendLine("        };");
+		sb.AppendLine("		};");
 		sb.AppendLine();
 
 		// ------------------------------------------------------------
@@ -340,53 +340,53 @@ func main()
 		// ------------------------------------------------------------
 
 		sb.AppendLine(
-			"        string tempDir = Path.Combine(");
+			"		string tempDir = Path.Combine(");
 		sb.AppendLine(
-			"            Path.GetTempPath(),");
+			"			Path.GetTempPath(),");
 		sb.AppendLine(
-			"            \"sud_\" + Guid.NewGuid().ToString(\"N\"));");
+			"			\"sud_\" + Guid.NewGuid().ToString(\"N\"));");
 
 		sb.AppendLine(
-			"        Directory.CreateDirectory(tempDir);");
+			"		Directory.CreateDirectory(tempDir);");
 
-		sb.AppendLine("        try");
-		sb.AppendLine("        {");
+		sb.AppendLine("		try");
+		sb.AppendLine("		{");
 
 		// ------------------------------------------------------------
 		// Extract embedded files
 		// ------------------------------------------------------------
 
 		sb.AppendLine(
-			"            foreach (var kv in files)");
-		sb.AppendLine("            {");
+			"			foreach (var kv in files)");
+		sb.AppendLine("			{");
 
 		sb.AppendLine(
-			"                string fullPath = Path.Combine(");
+			"				string fullPath = Path.Combine(");
 		sb.AppendLine(
-			"                    tempDir,");
+			"					tempDir,");
 		sb.AppendLine(
-			"                    kv.Key.Replace('/', Path.DirectorySeparatorChar));");
+			"					kv.Key.Replace('/', Path.DirectorySeparatorChar));");
 
 		sb.AppendLine(
-			"                string? directory = Path.GetDirectoryName(fullPath);");
+			"				string? directory = Path.GetDirectoryName(fullPath);");
 
 		sb.AppendLine(
-			"                if (directory != null)");
+			"				if (directory != null)");
 		sb.AppendLine(
-			"                {");
+			"				{");
 		sb.AppendLine(
-			"                    Directory.CreateDirectory(directory);");
+			"					Directory.CreateDirectory(directory);");
 		sb.AppendLine(
-			"                }");
+			"				}");
 
 		sb.AppendLine(
-			"                File.WriteAllBytes(");
+			"				File.WriteAllBytes(");
 		sb.AppendLine(
-			"                    fullPath,");
+			"					fullPath,");
 		sb.AppendLine(
-			"                    Convert.FromBase64String(kv.Value));");
+			"					Convert.FromBase64String(kv.Value));");
 
-		sb.AppendLine("            }");
+		sb.AppendLine("			}");
 
 		sb.AppendLine();
 
@@ -406,23 +406,23 @@ func main()
 						"\""));
 
 		sb.AppendLine(
-			$"            string entryFile = Path.Combine(" +
+			$"			string entryFile = Path.Combine(" +
 			$"tempDir, {entryPathParts});");
 
 		sb.AppendLine(
-			"            string src = File.ReadAllText(entryFile);");
+			"			string src = File.ReadAllText(entryFile);");
 
 		sb.AppendLine(
-			"            var lexer = new Lexer(src);");
+			"			var lexer = new Lexer(src);");
 
 		sb.AppendLine(
-			"            var parser = new Parser(lexer.Tokenize());");
+			"			var parser = new Parser(lexer.Tokenize());");
 
 		sb.AppendLine(
-			"            var program = parser.ParseProgram();");
+			"			var program = parser.ParseProgram();");
 
 		sb.AppendLine(
-			"            var interpreter = new Interpreter();");
+			"			var interpreter = new Interpreter();");
 
 		sb.AppendLine();
 
@@ -448,17 +448,17 @@ func main()
 						"\""));
 
 		sb.AppendLine(
-			$"            string modulesDir = Path.Combine(" +
+			$"			string modulesDir = Path.Combine(" +
 			$"tempDir, {modulesDirParts});");
 
 		sb.AppendLine(
-			"            Directory.CreateDirectory(modulesDir);");
+			"			Directory.CreateDirectory(modulesDir);");
 
 		sb.AppendLine(
-			"            interpreter.SetModulesDirectory(modulesDir);");
+			"			interpreter.SetModulesDirectory(modulesDir);");
 
 		//sb.AppendLine(
-		//	"            interpreter.SetLibrariesDirectory(Path.Combine(projectRoot, manifest.Libraries!));");
+		//	"			interpreter.SetLibrariesDirectory(Path.Combine(projectRoot, manifest.Libraries!));");
 
 		sb.AppendLine();
 
@@ -484,14 +484,14 @@ func main()
 						"\""));
 
 		sb.AppendLine(
-			$"            string librariesDir = Path.Combine(" +
+			$"			string librariesDir = Path.Combine(" +
 			$"tempDir, {librariesDirParts});");
 
 		sb.AppendLine(
-			"            Directory.CreateDirectory(librariesDir);");
+			"			Directory.CreateDirectory(librariesDir);");
 
 		sb.AppendLine(
-			"            interpreter.SetLibrariesDirectory(librariesDir);");
+			"			interpreter.SetLibrariesDirectory(librariesDir);");
 
 		sb.AppendLine();
 
@@ -500,37 +500,37 @@ func main()
 		// ------------------------------------------------------------
 
 		sb.AppendLine(
-			"            interpreter.Initialize(program);");
+			"			interpreter.Initialize(program);");
 
 		sb.AppendLine(
-			"            interpreter.Execute();");
+			"			interpreter.Execute();");
 
 		// ------------------------------------------------------------
 		// Cleanup
 		// ------------------------------------------------------------
 
-		sb.AppendLine("        }");
-		sb.AppendLine("        finally");
-		sb.AppendLine("        {");
+		sb.AppendLine("		}");
+		sb.AppendLine("		finally");
+		sb.AppendLine("		{");
 		sb.AppendLine(
-			"            try");
+			"			try");
 		sb.AppendLine(
-			"            {");
+			"			{");
 		sb.AppendLine(
-			"                Directory.Delete(tempDir, true);");
+			"				Directory.Delete(tempDir, true);");
 		sb.AppendLine(
-			"            }");
+			"			}");
 		sb.AppendLine(
-			"            catch");
+			"			catch");
 		sb.AppendLine(
-			"            {");
+			"			{");
 		sb.AppendLine(
-			"                // Ignore cleanup failures.");
+			"				// Ignore cleanup failures.");
 		sb.AppendLine(
-			"            }");
-		sb.AppendLine("        }");
+			"			}");
+		sb.AppendLine("		}");
 
-		sb.AppendLine("    }");
+		sb.AppendLine("	}");
 		sb.AppendLine("}");
 
 		// ------------------------------------------------------------
