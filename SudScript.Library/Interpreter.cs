@@ -3,6 +3,7 @@ namespace SudScript;
 using System.Threading;
 using System.Diagnostics;
 using System.Runtime.InteropServices;
+using System.Globalization;
 
 public class Interpreter
 {
@@ -11,6 +12,8 @@ public class Interpreter
 	string modulesDirectory = null!;
 	string librariesDirectory = null!;
 	readonly Dictionary<string, Func<List<Value>, Value>> builtins = new Dictionary<string, Func<List<Value>, Value>>();
+
+	readonly Dictionary<(StructDeclaration Decl, string Method, bool Shared), FunctionDeclaration> methodCache = new Dictionary<(StructDeclaration, string, bool), FunctionDeclaration>();
 
 	public void SetModulesDirectory(string path)
 	{
@@ -25,6 +28,7 @@ public class Interpreter
 	{
 		program = _program;
 		environment = new Environment();
+		methodCache.Clear();
 
 		if (modulesDirectory == null)
 		{
@@ -174,9 +178,10 @@ public class Interpreter
 
 		try
 		{
-			foreach (Statement statement in block.Body)
+			var body = block.Body;
+			for (int i = 0; i < body.Count; ++i)
 			{
-				var result = ExecuteStatement(statement);
+				var result = ExecuteStatement(body[i]);
 
 				if (result.Type != FlowType.None)
 				{
@@ -235,78 +240,32 @@ public class Interpreter
 		environment.DefineFunction(function.Name, function);
 	}
 
+	List<Value> EvaluateArguments(List<Expression> args)
+	{
+		var result = new List<Value>(args.Count);
+		for (int i = 0; i < args.Count; ++i)
+		{
+			result.Add(EvaluateExpression(args[i]));
+		}
+		return result;
+	}
+
 	Value CallFunction(FunctionCallExpression call)
 	{
 		if(builtins.TryGetValue(call.Name, out var builtin))
 		{
-			List<Value> arguments = new List<Value>();
-
-			foreach(Expression arg in call.Args)
-			{
-				arguments.Add(EvaluateExpression(arg));
-			}
-
-			return builtin(arguments);
+			return builtin(EvaluateArguments(call.Args));
 		}
 
 		FunctionDeclaration function = environment.GetFunction(call.Name);
+		List<Value> args = EvaluateArguments(call.Args);
 
-		List<Value> args = call.Args.Select(EvaluateExpression).ToList();
-
-		if(function is NativeFunctionDeclaration native)
-		{
-			if(native.ArgumentCount.HasValue && native.ArgumentCount.Value != args.Count)
-			{
-				throw new Exception(
-					$"Function '{call.Name}' expects " +
-					$"{native.ArgumentCount.Value} arguments, " +
-					$"but got {args.Count} instead.");
-			}
-			return native.Implementation(args);
-		}
-
-		if(function is not UserFunctionDeclaration userFunction)
-		{
-			throw new Exception($"Unknown function type '{function.GetType().Name}'.");
-		}
-
-		if(userFunction.Params.Count != args.Count)
-		{
-			throw new Exception(
-				$"Function '{call.Name}' expects " +
-				$"{userFunction.Params.Count} arguments, " +
-				$"but got {args.Count} instead.");
-		}
-
-		Environment previous = environment;
-
-		environment = new Environment(environment);
-
-		try
-		{
-			for(int i = 0; i < userFunction.Params.Count; ++i)
-			{
-				environment.DefineVariable(userFunction.Params[i], args[i]);
-			}
-
-			var result = ExecuteStatements(userFunction.Block.Body);
-
-			if(result.Type == FlowType.Return)
-			{
-				return result.Value!;
-			}
-
-			return new VoidValue();
-		}
-		finally
-		{
-			environment = previous;
-		}
+		return Invoke(function, args, call.Name, self: null);
 	}
 
 	Value CallMethod(MethodCallExpression call)
 	{
-		List<Value> args = call.Args.Select(EvaluateExpression).ToList();
+		List<Value> args = EvaluateArguments(call.Args);
 
 		if(call.Target is IdentifierExpression id && environment.TryGetStruct(id.Name, out var decl))
 		{
@@ -397,10 +356,12 @@ public class Interpreter
 			{
 				string separator = ((StringValue)args[0]).Value;
 
-				var values = str.Value
-					.Split(separator)
-					.Select(s => (Value)new StringValue(s))
-					.ToList();
+				var parts = str.Value.Split(separator);
+				var values = new List<Value>(parts.Length);
+				for (int i = 0; i < parts.Length; ++i)
+				{
+					values.Add(new StringValue(parts[i]));
+				}
 
 				return new ListValue(values);
 			}
@@ -499,99 +460,76 @@ public class Interpreter
 		}
 	}
 
+	FunctionDeclaration ResolveMethod(StructDeclaration decl, string method, bool shared)
+	{
+		var key = (decl, method, shared);
+
+		if (methodCache.TryGetValue(key, out var cached))
+		{
+			return cached;
+		}
+
+		FunctionDeclaration? found = null;
+		foreach (var m in decl.Methods)
+		{
+			if (m.IsShared == shared && m.Name == method)
+			{
+				found = m;
+				break;
+			}
+		}
+
+		if (found == null)
+		{
+			throw new Exception(shared
+				? $"Struct '{decl.Name}' has no shared method '{method}'."
+				: $"Struct '{decl.Name}' has no instance method '{method}'.");
+		}
+
+		methodCache[key] = found;
+		return found;
+	}
+
 	Value CallStructInstanceMethod(StructInstanceValue instance, string method, List<Value> args)
 	{
-		StructDeclaration decl =
-			environment.GetStruct(instance.TypeName);
+		StructDeclaration decl = environment.GetStruct(instance.TypeName);
+		FunctionDeclaration function = ResolveMethod(decl, method, shared: false);
 
-		FunctionDeclaration function =
-			decl.Methods.FirstOrDefault(
-				m => !m.IsShared && m.Name == method)
-			?? throw new Exception(
-				$"Struct '{instance.TypeName}' has no instance method '{method}'.");
-
-		if(function is NativeFunctionDeclaration native)
-		{
-			if(native.ArgumentCount.HasValue && native.ArgumentCount.Value != args.Count)
-			{
-				throw new Exception(
-					$"Method '{method}' expects " +
-					$"{native.ArgumentCount.Value} arguments, " +
-					$"but got {args.Count} instead.");
-			}
-			return native.Implementation(args);
-		}
-
-		if(function is not UserFunctionDeclaration userFunction)
-		{
-			throw new Exception($"Unknown function type '{function.GetType().Name}'.");
-		}
-
-		if(userFunction.Params.Count != args.Count)
-		{
-			throw new Exception(
-				$"Method '{method}' expects {userFunction.Params.Count} " +
-				$"arguments but got {args.Count} instead.");
-		}
-
-		Environment previous = environment;
-
-		environment = new Environment(environment);
-
-		try
-		{
-			environment.DefineVariable("self", instance);
-
-			for(int i = 0; i < userFunction.Params.Count; ++i)
-			{
-				environment.DefineVariable(userFunction.Params[i], args[i]);
-			}
-
-			var result = ExecuteStatements(userFunction.Block.Body);
-
-			if(result.Type == FlowType.Return)
-			{
-				return result.Value!;
-			}
-
-			return new VoidValue();
-		}
-		finally
-		{
-			environment = previous;
-		}
+		return Invoke(function, args, method, self: instance);
 	}
 
 	Value CallStructSharedMethod(StructDeclaration decl, string method, List<Value> args)
 	{
-		FunctionDeclaration function =
-			decl.Methods.FirstOrDefault(
-				m => m.IsShared && m.Name == method)
-			?? throw new Exception(
-				$"Struct '{decl.Name}' has no shared method '{method}'.");
+		FunctionDeclaration function = ResolveMethod(decl, method, shared: true);
 
-		if(function is NativeFunctionDeclaration native)
+		return Invoke(function, args, method, self: null);
+	}
+
+	Value Invoke(FunctionDeclaration function, List<Value> args, string name, StructInstanceValue? self)
+	{
+		if (function is NativeFunctionDeclaration native)
 		{
-			if(native.ArgumentCount.HasValue && native.ArgumentCount.Value != args.Count)
+			if (native.ArgumentCount.HasValue && native.ArgumentCount.Value != args.Count)
 			{
 				throw new Exception(
-					$"Method '{method}' expects " +
+					$"Function '{name}' expects " +
 					$"{native.ArgumentCount.Value} arguments, " +
 					$"but got {args.Count} instead.");
 			}
 			return native.Implementation(args);
 		}
 
-		if(function is not UserFunctionDeclaration userFunction)
+		if (function is not UserFunctionDeclaration userFunction)
 		{
 			throw new Exception($"Unknown function type '{function.GetType().Name}'.");
 		}
 
-		if(userFunction.Params.Count != args.Count)
+		if (userFunction.Params.Count != args.Count)
 		{
 			throw new Exception(
-				$"Shared method '{method}' expects {userFunction.Params.Count} " +
-				$"arguments but got {args.Count} instead.");
+				$"Function '{name}' expects " +
+				$"{userFunction.Params.Count} arguments, " +
+				$"but got {args.Count} instead.");
 		}
 
 		Environment previous = environment;
@@ -600,14 +538,19 @@ public class Interpreter
 
 		try
 		{
-			for(int i = 0; i < userFunction.Params.Count; ++i)
+			if (self != null)
+			{
+				environment.DefineVariable("self", self);
+			}
+
+			for (int i = 0; i < userFunction.Params.Count; ++i)
 			{
 				environment.DefineVariable(userFunction.Params[i], args[i]);
 			}
 
 			var result = ExecuteStatements(userFunction.Block.Body);
 
-			if(result.Type == FlowType.Return)
+			if (result.Type == FlowType.Return)
 			{
 				return result.Value!;
 			}
@@ -622,9 +565,9 @@ public class Interpreter
 
 	ExecutionResult ExecuteStatements(List<Statement> statements)
 	{
-		foreach (var statement in statements)
+		for (int i = 0; i < statements.Count; ++i)
 		{
-			var result = ExecuteStatement(statement);
+			var result = ExecuteStatement(statements[i]);
 
 			if (result.Type != FlowType.None)
 			{
@@ -655,10 +598,10 @@ public class Interpreter
 
 			case ListExpression list:
 			{
-				List<Value> values = new List<Value>();
-				foreach(Expression expr in list.Elements)
+				var values = new List<Value>(list.Elements.Count);
+				for (int i = 0; i < list.Elements.Count; ++i)
 				{
-					values.Add(EvaluateExpression(expr));
+					values.Add(EvaluateExpression(list.Elements[i]));
 				}
 				return new ListValue(values);
 			}
@@ -770,7 +713,7 @@ public class Interpreter
 			{
 				StructDeclaration decl = environment.GetStruct(literal.Name);
 
-				Dictionary<string, Value> fields = new Dictionary<string, Value>();
+				Dictionary<string, Value> fields = new Dictionary<string, Value>(decl.Fields.Count + literal.Fields.Count);
 
 				foreach(var field in decl.Fields)
 				{
@@ -912,6 +855,28 @@ public class Interpreter
 			ListValue list => "[" + string.Join(", ", list.Values.Select(ToText)) + "]",
 			StructInstanceValue sv => $"{sv.TypeName} {{ {string.Join(", ", sv.Fields.Select(kv => $"{kv.Key}: {ToText(kv.Value)}"))} }}",
 			_ => Value.ToString() ?? ""
+		};
+	}
+
+	public static int ToInt(Value value)
+	{
+		return value switch
+		{
+			NumberValue n => checked((int)n.Value),
+			StringValue s => int.Parse(s.Value, CultureInfo.InvariantCulture),
+			_ => throw new InvalidOperationException(
+				$"Expected a number, got {value.GetType().Name}.")
+		};
+	}
+
+	public static byte ToByte(Value value)
+	{
+		return value switch
+		{
+			NumberValue n => checked((byte)n.Value),
+			StringValue s => byte.Parse(s.Value, CultureInfo.InvariantCulture),
+			_ => throw new InvalidOperationException(
+				$"Expected a number, got {value.GetType().Name}.")
 		};
 	}
 
