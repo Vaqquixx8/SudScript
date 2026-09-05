@@ -1,23 +1,29 @@
 namespace SudScript;
 
+using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
+
 public class Environment(Environment? parent = null)
 {
-	readonly Dictionary<string, Value> values = new Dictionary<string, Value>();
-	readonly Dictionary<string, FunctionDeclaration> functions = new Dictionary<string, FunctionDeclaration>();
-	readonly Dictionary<string, StructDeclaration> structs = new Dictionary<string, StructDeclaration>();
-
-	readonly List<Environment> imports = new List<Environment>();
+	Dictionary<string, Value>? values;
+	Dictionary<string, FunctionDeclaration>? functions;
+	Dictionary<string, StructDeclaration>? structs;
+	List<Environment>? imports;
 
 	public Environment? Parent { get; } = parent;
 
 	public void AddImport(Environment imported)
 	{
-		imports.Add(imported);
+		(imports ??= new List<Environment>()).Add(imported);
 	}
+
+	// -------------------------------------------------------------
+	// Variables
+	// -------------------------------------------------------------
 
 	public void DefineVariable(string name, Value value)
 	{
-		values[name] = value;
+		(values ??= new Dictionary<string, Value>())[name] = value;
 	}
 
 	public Value GetVariable(string name)
@@ -26,27 +32,39 @@ public class Environment(Environment? parent = null)
 		{
 			return value;
 		}
-
 		throw new Exception($"Undefined variable '{name}'");
 	}
 
 	public bool TryGetVariable(string name, out Value value)
 	{
-		if (values.TryGetValue(name, out value!))
+		Environment? env = this;
+		while (env != null)
 		{
-			return true;
-		}
-
-		if (Parent != null && Parent.TryGetVariable(name, out value))
-		{
-			return true;
-		}
-
-		foreach (var import in imports)
-		{
-			if (import.TryGetOwnVariable(name, out value))
+			if (env.values != null && env.values.TryGetValue(name, out value!))
 			{
 				return true;
+			}
+			env = env.Parent;
+		}
+
+		return TryGetImportedVariable(name, out value);
+	}
+
+	bool TryGetImportedVariable(string name, out Value value)
+	{
+		if (Parent != null && Parent.TryGetImportedVariable(name, out value))
+		{
+			return true;
+		}
+
+		if (imports != null)
+		{
+			foreach (var import in imports)
+			{
+				if (import.TryGetOwnVariable(name, out value!))
+				{
+					return true;
+				}
 			}
 		}
 
@@ -56,29 +74,40 @@ public class Environment(Environment? parent = null)
 
 	public bool TryGetOwnVariable(string name, out Value value)
 	{
-		return values.TryGetValue(name, out value!);
+		if (values != null && values.TryGetValue(name, out value!))
+		{
+			return true;
+		}
+		value = default!;
+		return false;
 	}
 
 	public void AssignVariable(string name, Value value)
 	{
-		if (values.ContainsKey(name))
+		Environment? env = this;
+		while (env != null)
 		{
-			values[name] = value;
-			return;
+			if (env.values != null)
+			{
+				ref Value slot = ref CollectionsMarshal.GetValueRefOrNullRef(env.values, name);
+				if (!Unsafe.IsNullRef(ref slot))
+				{
+					slot = value;
+					return;
+				}
+			}
+			env = env.Parent;
 		}
-
-		if (Parent != null)
-		{
-			Parent.AssignVariable(name, value);
-			return;
-		}
-
 		throw new Exception($"Undefined variable '{name}'");
 	}
 
+	// -------------------------------------------------------------
+	// Functions
+	// -------------------------------------------------------------
+
 	public void DefineFunction(string name, FunctionDeclaration function)
 	{
-		functions[name] = function;
+		(functions ??= new Dictionary<string, FunctionDeclaration>())[name] = function;
 	}
 
 	public FunctionDeclaration GetFunction(string name)
@@ -87,27 +116,39 @@ public class Environment(Environment? parent = null)
 		{
 			return function;
 		}
-
 		throw new Exception($"Undefined function '{name}'");
 	}
 
 	public bool TryGetFunction(string name, out FunctionDeclaration function)
 	{
-		if (functions.TryGetValue(name, out function!))
+		Environment? env = this;
+		while (env != null)
 		{
-			return true;
-		}
-
-		if (Parent != null && Parent.TryGetFunction(name, out function))
-		{
-			return true;
-		}
-
-		foreach (var import in imports)
-		{
-			if (import.TryGetOwnFunction(name, out function))
+			if (env.functions != null && env.functions.TryGetValue(name, out function!))
 			{
 				return true;
+			}
+			env = env.Parent;
+		}
+
+		return TryGetImportedFunction(name, out function);
+	}
+
+	bool TryGetImportedFunction(string name, out FunctionDeclaration function)
+	{
+		if (Parent != null && Parent.TryGetImportedFunction(name, out function))
+		{
+			return true;
+		}
+
+		if (imports != null)
+		{
+			foreach (var import in imports)
+			{
+				if (import.TryGetOwnFunction(name, out function!))
+				{
+					return true;
+				}
 			}
 		}
 
@@ -117,12 +158,21 @@ public class Environment(Environment? parent = null)
 
 	public bool TryGetOwnFunction(string name, out FunctionDeclaration function)
 	{
-		return functions.TryGetValue(name, out function!);
+		if (functions != null && functions.TryGetValue(name, out function!))
+		{
+			return true;
+		}
+		function = default!;
+		return false;
 	}
+
+	// -------------------------------------------------------------
+	// Structs
+	// -------------------------------------------------------------
 
 	public void DefineStruct(string name, StructDeclaration declaration)
 	{
-		structs[name] = declaration;
+		(structs ??= new Dictionary<string, StructDeclaration>())[name] = declaration;
 	}
 
 	public StructDeclaration GetStruct(string name)
@@ -131,27 +181,39 @@ public class Environment(Environment? parent = null)
 		{
 			return declaration;
 		}
-
 		throw new Exception($"Undefined struct '{name}'");
 	}
 
 	public bool TryGetStruct(string name, out StructDeclaration declaration)
 	{
-		if (structs.TryGetValue(name, out declaration!))
+		Environment? env = this;
+		while (env != null)
 		{
-			return true;
-		}
-
-		if (Parent != null && Parent.TryGetStruct(name, out declaration))
-		{
-			return true;
-		}
-
-		foreach (var import in imports)
-		{
-			if (import.TryGetOwnStruct(name, out declaration))
+			if (env.structs != null && env.structs.TryGetValue(name, out declaration!))
 			{
 				return true;
+			}
+			env = env.Parent;
+		}
+
+		return TryGetImportedStruct(name, out declaration);
+	}
+
+	bool TryGetImportedStruct(string name, out StructDeclaration declaration)
+	{
+		if (Parent != null && Parent.TryGetImportedStruct(name, out declaration))
+		{
+			return true;
+		}
+
+		if (imports != null)
+		{
+			foreach (var import in imports)
+			{
+				if (import.TryGetOwnStruct(name, out declaration!))
+				{
+					return true;
+				}
 			}
 		}
 
@@ -161,6 +223,19 @@ public class Environment(Environment? parent = null)
 
 	public bool TryGetOwnStruct(string name, out StructDeclaration declaration)
 	{
-		return structs.TryGetValue(name, out declaration!);
+		if (structs != null && structs.TryGetValue(name, out declaration!))
+		{
+			return true;
+		}
+		declaration = default!;
+		return false;
+	}
+
+	public void ResetForReuse()
+	{
+		values?.Clear();
+		functions?.Clear();
+		structs?.Clear();
+		imports?.Clear();
 	}
 }

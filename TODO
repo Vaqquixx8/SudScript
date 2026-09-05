@@ -81,10 +81,19 @@ Control Flow Improvements
 		is all a
 		single
 		comment */
-[ ] 'switch' Statement (Name as 'jump')
+[ ] 'switch' Statement (Name as 'jump' 'when', 'stop')
 	[ ] Lexer
 	[ ] Parser
 	[ ] Interpreter
+jump(value)
+{
+	when(1)
+		// Code below runs added to block statement until 'when' keyword
+	when(2)
+		// Code below runs added to block statement until 'stop' keyword
+	stop
+		// default
+}
 [x] Empty variable declarations "let myVar = null"
 
 Endgame Shit

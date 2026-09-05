@@ -12,7 +12,13 @@ public record ProgramNode(List<Statement> Body);
 
 public record NumberValue(float Value) : Value;
 public record StringValue(string Value) : Value;
-public record BooleanValue(bool Value) : Value;
+public record BooleanValue(bool Value) : Value
+{
+	public static readonly BooleanValue True = new BooleanValue(true);
+	public static readonly BooleanValue False = new BooleanValue(false);
+
+	public static BooleanValue Of(bool value) => value ? True : False;
+}
 public record ListValue(List<Value> Values) : Value;
 
 public record StructInstanceValue(

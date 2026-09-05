@@ -11,9 +11,9 @@ public class Interpreter
 	ProgramNode? program;
 	string modulesDirectory = null!;
 	string librariesDirectory = null!;
-	readonly Dictionary<string, Func<List<Value>, Value>> builtins = new Dictionary<string, Func<List<Value>, Value>>();
 
 	readonly Dictionary<(StructDeclaration Decl, string Method, bool Shared), FunctionDeclaration> methodCache = new Dictionary<(StructDeclaration, string, bool), FunctionDeclaration>();
+	readonly Dictionary<string, Func<List<Value>, Value>> builtins = new Dictionary<string, Func<List<Value>, Value>>();
 
 	public void SetModulesDirectory(string path)
 	{
@@ -215,9 +215,33 @@ public class Interpreter
 
 	ExecutionResult ExecuteWhile(WhileStatement whileStatement)
 	{
+		Environment? loopEnvironment = null;
+
 		while (IsTruthy(EvaluateExpression(whileStatement.Condition)))
 		{
-			var result = ExecuteStatement(whileStatement.Block);
+			ExecutionResult result;
+
+			if (whileStatement.Block is BlockStatement block)
+			{
+				loopEnvironment ??= new Environment(environment);
+				loopEnvironment.ResetForReuse();
+
+				Environment previous = environment;
+				environment = loopEnvironment;
+
+				try
+				{
+					result = ExecuteStatements(block.Body);
+				}
+				finally
+				{
+					environment = previous;
+				}
+			}
+			else
+			{
+				result = ExecuteStatement(whileStatement.Block);
+			}
 
 			switch (result.Type)
 			{
@@ -299,17 +323,17 @@ public class Interpreter
 			case "contains":
 			{
 				string value = ((StringValue)args[0]).Value;
-				return new BooleanValue(str.Value.Contains(value));
+				return BooleanValue.Of(str.Value.Contains(value));
 			}
 			case "startsWith":
 			{
 				string value = ((StringValue)args[0]).Value;
-				return new BooleanValue(str.Value.StartsWith(value));
+				return BooleanValue.Of(str.Value.StartsWith(value));
 			}
 			case "endsWith":
 			{
 				string value = ((StringValue)args[0]).Value;
-				return new BooleanValue(str.Value.EndsWith(value));
+				return BooleanValue.Of(str.Value.EndsWith(value));
 			}
 			case "indexOf":
 			{
@@ -412,7 +436,7 @@ public class Interpreter
 			}
 			case "contains":
 			{
-				return new BooleanValue(list.Values.Any(v => AreEqual(v, args[0])));
+				return BooleanValue.Of(list.Values.Any(v => AreEqual(v, args[0])));
 			}
 			case "fill":
 			{
@@ -589,7 +613,7 @@ public class Interpreter
 				return new StringValue(str.Value);
 
 			case BooleanExpression boolean:
-				return new BooleanValue(boolean.Value);
+				return BooleanValue.Of(boolean.Value);
 
 			case VoidExpression:
 				return new VoidValue();
@@ -616,7 +640,7 @@ public class Interpreter
 				return unary.Op switch
 				{
 					TokenType.Minus when Right is NumberValue n => new NumberValue(-n.Value),
-					TokenType.Exclamation when Right is BooleanValue n => new BooleanValue(!IsTruthy(Right)),
+					TokenType.Exclamation when Right is BooleanValue n => BooleanValue.Of(!IsTruthy(Right)),
 					_ => throw new Exception($"Unknown unary operator {unary.Op}."),
 				};
 			}
@@ -629,9 +653,9 @@ public class Interpreter
 
 					if (!IsTruthy(left))
 					{
-						return new BooleanValue(false);
+						return BooleanValue.Of(false);
 					}
-					return new BooleanValue(IsTruthy(EvaluateExpression(binary.Right)));
+					return BooleanValue.Of(IsTruthy(EvaluateExpression(binary.Right)));
 				}
 
 				if (binary.Op == TokenType.OrOr)
@@ -640,10 +664,10 @@ public class Interpreter
 
 					if (IsTruthy(left))
 					{
-						return new BooleanValue(true);
+						return BooleanValue.Of(true);
 					}
 
-					return new BooleanValue(IsTruthy(EvaluateExpression(binary.Right)));
+					return BooleanValue.Of(IsTruthy(EvaluateExpression(binary.Right)));
 				}
 
 				Value leftValue = EvaluateExpression(binary.Left);
@@ -694,8 +718,7 @@ public class Interpreter
 							return value;
 						}
 
-						throw new Exception(
-							$"{target.GetType().Name} does not support member assignment.");
+						throw new Exception($"{target.GetType().Name} does not support member assignment.");
 					}
 
 					default:
@@ -799,20 +822,20 @@ public class Interpreter
 				=> new StringValue(ToText(left) + ToText(right)),
 
 			// Equality
-			(TokenType.EqualsEquals, _, _) => new BooleanValue(AreEqual(left, right)),
-			(TokenType.NotEquals, _, _) => new BooleanValue(!AreEqual(left, right)),
+			(TokenType.EqualsEquals, _, _) => BooleanValue.Of(AreEqual(left, right)),
+			(TokenType.NotEquals, _, _) => BooleanValue.Of(!AreEqual(left, right)),
 
 			// Numeric comparisons
-			(TokenType.Lesser, NumberValue a, NumberValue b) => new BooleanValue(a.Value < b.Value),
-			(TokenType.LEqual, NumberValue a, NumberValue b) => new BooleanValue(a.Value <= b.Value),
-			(TokenType.Greater, NumberValue a, NumberValue b) => new BooleanValue(a.Value > b.Value),
-			(TokenType.GEqual, NumberValue a, NumberValue b) => new BooleanValue(a.Value >= b.Value),
+			(TokenType.Lesser, NumberValue a, NumberValue b) => BooleanValue.Of(a.Value < b.Value),
+			(TokenType.LEqual, NumberValue a, NumberValue b) => BooleanValue.Of(a.Value <= b.Value),
+			(TokenType.Greater, NumberValue a, NumberValue b) => BooleanValue.Of(a.Value > b.Value),
+			(TokenType.GEqual, NumberValue a, NumberValue b) => BooleanValue.Of(a.Value >= b.Value),
 
 			// String comparisons
-			(TokenType.Lesser, StringValue a, StringValue b) => new BooleanValue(string.CompareOrdinal(a.Value, b.Value) < 0),
-			(TokenType.LEqual, StringValue a, StringValue b) => new BooleanValue(string.CompareOrdinal(a.Value, b.Value) <= 0),
-			(TokenType.Greater, StringValue a, StringValue b) => new BooleanValue(string.CompareOrdinal(a.Value, b.Value) > 0),
-			(TokenType.GEqual, StringValue a, StringValue b) => new BooleanValue(string.CompareOrdinal(a.Value, b.Value) >= 0),
+			(TokenType.Lesser, StringValue a, StringValue b) => BooleanValue.Of(string.CompareOrdinal(a.Value, b.Value) < 0),
+			(TokenType.LEqual, StringValue a, StringValue b) => BooleanValue.Of(string.CompareOrdinal(a.Value, b.Value) <= 0),
+			(TokenType.Greater, StringValue a, StringValue b) => BooleanValue.Of(string.CompareOrdinal(a.Value, b.Value) > 0),
+			(TokenType.GEqual, StringValue a, StringValue b) => BooleanValue.Of(string.CompareOrdinal(a.Value, b.Value) >= 0),
 
 			_ => throw new Exception(
 				$"Unsupported operator {op} for {left.GetType().Name} and {right.GetType().Name}.")
